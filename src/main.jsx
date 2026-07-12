@@ -17,10 +17,10 @@ class ErrorBoundary extends React.Component {
     return (
       <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#141210', color: '#F2EAD9', fontFamily: 'Fraunces, Georgia, serif' }}>
         <div style={{ textAlign: 'center', padding: 24 }}>
-          <div style={{ fontSize: 44, color: '#F5A623' }}>☿</div>
+          <div style={{ fontSize: 44, color: '#DF8757' }}>☿</div>
           <h1 style={{ fontWeight: 600, margin: '10px 0 6px' }}>Reconnecting to the floor…</h1>
           <p style={{ color: '#A89C8C', margin: '0 0 18px', fontFamily: 'IBM Plex Mono, monospace', fontSize: 13 }}>Mercury Works is re-syncing with Mission Control.</p>
-          <button onClick={() => location.reload()} style={{ background: '#F5A623', color: '#141210', border: 0, borderRadius: 3, padding: '10px 18px', font: '700 13px IBM Plex Mono, monospace', cursor: 'pointer' }}>Reload</button>
+          <button onClick={() => location.reload()} style={{ background: '#B4451C', color: '#F6EDE2', border: 0, borderRadius: 6, padding: '10px 18px', font: '700 13px IBM Plex Mono, monospace', cursor: 'pointer' }}>Reload</button>
         </div>
       </div>
     )

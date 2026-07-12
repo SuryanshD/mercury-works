@@ -4,23 +4,25 @@ import QRCode from 'qrcode'
 import { api } from '../convex/_generated/api'
 
 const NODES = ['intake','research','naming','review','copy','engineer','publish','voice','invoice','qa','learn']
-const LABEL = { intake:'Intake', research:'Research', naming:'Naming', review:'Review', copy:'Copy', engineer:'Engineer', publish:'Publish', voice:'Voice', invoice:'Invoice', qa:'QA', learn:'Learn' }
+const LABEL = { intake:'Intake', research:'Research', naming:'Naming', review:'Review', copy:'Copy', engineer:'Engineer', publish:'Publish', voice:'Voice', invoice:'Invoice', qa:'QA', learn:'Learn', deliver:'Deliver' }
 const NODE_MODEL = { research:'Linkup', engineer:'GPT-5.6 Sol', voice:'ElevenLabs', invoice:'Dodo' }
-const COLORS = { done:'#7FB069', started:'#F5A623', working:'#F5A623', failed:'#E4572E', rejected:'#E4572E', revised:'#7FB5C9' }
+// vermilion tint = in flight · moss = done · cold red = failure · glacier = revision
+const COLORS = { done:'#7FB069', started:'#DF8757', working:'#DF8757', failed:'#E05252', rejected:'#E05252', revised:'#7FB5C9' }
 // status is NEVER color-alone: every status carries a glyph + a text label too
 const NGLYPH = { done:'✓', started:'▲', working:'▲', failed:'✕', rejected:'✕', revised:'↺' }
 const JOB = {
-  working:  { c:'var(--accent)', g:'▲', label:'WORKING' },
-  queued:   { c:'var(--faint)',  g:'○', label:'QUEUED' },
-  invoiced: { c:'var(--accent)', g:'$', label:'INVOICED' },   // real status: checkout created, awaiting pay
-  delivered:{ c:'var(--green)',  g:'✓', label:'DELIVERED' },
-  paid:     { c:'var(--violet)', g:'◆', label:'PAID' },
-  stuck:    { c:'var(--red)',    g:'✕', label:'STUCK' },      // real failure state — must read as alarm, not idle
-  failed:   { c:'var(--red)',    g:'✕', label:'FAILED' },
+  working:  { c:'var(--accent-lt)', g:'▲', label:'WORKING' },
+  queued:   { c:'var(--faint)',     g:'○', label:'QUEUED' },
+  invoiced: { c:'var(--accent-lt)', g:'$', label:'INVOICED' },   // real status: checkout created, awaiting pay
+  delivered:{ c:'var(--green)',     g:'✓', label:'DELIVERED' },
+  paid:     { c:'var(--violet)',    g:'◆', label:'PAID' },
+  stuck:    { c:'var(--red)',       g:'✕', label:'STUCK' },      // real failure state — must read as alarm, not idle
+  failed:   { c:'var(--red)',       g:'✕', label:'FAILED' },
 }
 const jobMeta = (s) => JOB[s] || { c:'var(--faint)', g:'·', label:(s || 'unknown').toUpperCase() }
 const col = (s) => COLORS[s] || '#3A322A'
 const money = (n) => (n == null ? '—' : '$' + Number(n).toFixed(2))
+const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s)
 
 const rel = (ts) => {
   if (!ts) return '—'
@@ -30,6 +32,7 @@ const rel = (ts) => {
   if (s < 86400) return Math.floor(s / 3600) + 'h ago'
   return Math.floor(s / 86400) + 'd ago'
 }
+const clock = (ts) => (ts ? new Date(ts).toLocaleTimeString([], { hour12: false }) : '—')
 const fmtDur = (sec) => {
   if (sec == null) return '—'
   if (sec < 60) return sec.toFixed(0) + 's'
@@ -41,14 +44,64 @@ const readRun = () => {
   return m ? decodeURIComponent(m[1]) : null
 }
 
+/* ── ?demo — LOCAL fixtures for layout/screenshot verification (never touches Convex).
+   ?demo shows a mid-flight run + a finished run; ?demo=idle shows the empty board.
+   Production (no param) is 100% live Convex data, exactly as before. ─────────── */
+const DEMO_PARAM = (() => { try { return new URLSearchParams(location.search).get('demo') } catch { return null } })()
+const DEMO = DEMO_PARAM !== null
+const DEMO_IDLE = DEMO_PARAM === 'idle'
+const T0 = Date.now()
+const DEMO_JOBS = DEMO ? [
+  { _id:'demo-run-1', _creationTime:T0-510e3, brief:'a subscription box for rare houseplants', clientName:'Ana K.', status:'working', startedAt:T0-420e3, lastEventAt:T0-9e3, costUsd:0.31 },
+  { _id:'demo-run-2', _creationTime:T0-42*60e3, brief:'an AI notetaker for therapists', clientName:'Sam R.', status:'delivered', startedAt:T0-41*60e3, lastEventAt:T0-35*60e3, liveUrl:'https://noted-care.pages.dev', costUsd:0.27, durationS:352 },
+  { _id:'demo-run-3', _creationTime:T0-2*60e3, brief:'a small-batch oat milk brand', clientName:'Jo', status:'queued', lastEventAt:T0-2*60e3 },
+] : []
+const DEMO_EVENTS = DEMO ? {
+  'demo-run-1': [
+    { _id:'d1', node:'intake',   status:'started',  note:'reading the brief…', ts:T0-420e3 },
+    { _id:'d2', node:'intake',   status:'done',     note:'vertical: plants · client: Ana K.', ts:T0-408e3 },
+    { _id:'d3', node:'research', status:'started',  note:'researching the rare-houseplant market…', model:'Linkup', ts:T0-400e3 },
+    { _id:'d4', node:'research', status:'done',     note:'found 3 competitors · 9 cited sources', model:'Linkup', costUsd:0.04, ts:T0-345e3 },
+    { _id:'d5', node:'naming',   status:'started',  note:'drafting a shortlist of names…', tokens:900, ts:T0-340e3 },
+    { _id:'d6', node:'naming',   status:'rejected', note:"'Loomfolk' — domain and trademark already taken", ts:T0-300e3 },
+    { _id:'d7', node:'naming',   status:'revised',  note:'regenerating around botanical latin…', ts:T0-290e3 },
+    { _id:'d8', node:'naming',   status:'done',     note:"name locked: 'Verde & Vine' + tagline", costUsd:0.03, tokens:2100, ts:T0-260e3 },
+    { _id:'d9', node:'review',   status:'done',     note:'MD sign-off — research + naming approved', ts:T0-250e3 },
+    { _id:'d10', node:'copy',    status:'started',  note:'writing hero copy…', ts:T0-245e3 },
+    { _id:'d11', node:'copy',    status:'done',     note:'hero, 3 sections + CTA drafted', costUsd:0.06, tokens:5400, ts:T0-190e3 },
+    { _id:'d12', node:'engineer',status:'started',  note:'scaffolding the site…', model:'GPT-5.6 Sol', ts:T0-180e3 },
+    { _id:'d13', node:'engineer',status:'started',  note:'building hero + feature sections…', ts:T0-120e3 },
+    { _id:'d14', node:'engineer',status:'started',  note:'wiring the lead-capture form…', ts:T0-40e3 },
+  ],
+  'demo-run-2': [
+    { _id:'f1', node:'intake',   status:'done', note:'vertical: healthtech · client: Sam R.', ts:T0-41*60e3 },
+    { _id:'f2', node:'research', status:'done', note:'found 4 competitors · 11 cited sources', model:'Linkup', costUsd:0.05, ts:T0-40*60e3 },
+    { _id:'f3', node:'naming',   status:'done', note:"name locked: 'Noted' + tagline", costUsd:0.03, tokens:1800, ts:T0-39*60e3 },
+    { _id:'f4', node:'review',   status:'done', note:'MD sign-off — all upstream work approved', ts:T0-38.6*60e3 },
+    { _id:'f5', node:'copy',     status:'done', note:'landing copy drafted · 4 sections', costUsd:0.05, tokens:4900, ts:T0-38*60e3 },
+    { _id:'f6', node:'engineer', status:'done', note:'site built · lead form wired', model:'GPT-5.6 Sol', costUsd:0.09, tokens:12100, ts:T0-37*60e3 },
+    { _id:'f7', node:'publish',  status:'done', note:'live at https://noted-care.pages.dev — HTTP 200', ts:T0-36.4*60e3 },
+    { _id:'f8', node:'voice',    status:'done', note:'30s brand radio ad rendered → /ad.mp3', model:'ElevenLabs', costUsd:0.02, ts:T0-36*60e3 },
+    { _id:'f9', node:'invoice',  status:'done', note:'checkout link created', model:'Dodo', ts:T0-35.6*60e3 },
+    { _id:'f10', node:'qa',      status:'done', note:'HTTP 200 · form posts · audio plays', ts:T0-35.2*60e3 },
+    { _id:'f11', node:'learn',   status:'done', note:'skill metrics written · healthtech v1', ts:T0-35*60e3 },
+  ],
+} : {}
+const DEMO_DELTA = { vertical:'plants', rows:[{ durationS:312, costUsd:0.42 }, { durationS:201, costUsd:0.27 }] }
+
 export default function MissionControl() {
   const jobsRaw = useQuery(api.jobs.listJobs)
-  const jobs = jobsRaw || []
-  const loading = jobsRaw === undefined
-  const active = useQuery(api.jobs.getActiveJob)
-  const delta = useQuery(api.jobs.latestVerticalWithDelta)
-  const leads = useQuery(api.jobs.leadCount) ?? 0
+  const activeRaw = useQuery(api.jobs.getActiveJob)
+  const deltaRaw = useQuery(api.jobs.latestVerticalWithDelta)
+  const leadsRaw = useQuery(api.jobs.leadCount)
   const enqueueBatch = useMutation(api.autopilot.enqueueBatch)
+
+  const jobs = DEMO ? (DEMO_IDLE ? [] : DEMO_JOBS) : (jobsRaw || [])
+  const loading = DEMO ? false : jobsRaw === undefined
+  const active = DEMO ? (DEMO_IDLE ? null : DEMO_JOBS[0]) : activeRaw
+  const delta = DEMO ? (DEMO_IDLE ? null : DEMO_DELTA) : deltaRaw
+  const leads = DEMO ? (DEMO_IDLE ? 0 : 12) : (leadsRaw ?? 0)
+  const commission = (count) => { if (DEMO) return; enqueueBatch({ count }) }
 
   // Deep-linkable selection: #run=<id> survives refresh + is shareable.
   const [selectedJobId, setSelectedJobId] = useState(readRun)
@@ -78,13 +131,56 @@ export default function MissionControl() {
   const shown = explicit || active || null
   const shownId = shown?._id
 
-  const eventsRaw = useQuery(api.jobs.jobEvents, shown ? { jobId: shown._id } : 'skip')
-  const events = eventsRaw || []
-  const dagLoading = !!shown && eventsRaw === undefined
+  const eventsRaw = useQuery(api.jobs.jobEvents, shown && !DEMO ? { jobId: shown._id } : 'skip')
+  const events = DEMO ? (DEMO_EVENTS[shownId] || []) : (eventsRaw || [])
+  const dagLoading = DEMO ? false : (!!shown && eventsRaw === undefined)
 
+  /* ── TRANSPARENCY: keep EVERY event, grouped per agent (never collapsed) ── */
+  const byNode = {}
+  events.forEach((e) => { (byNode[e.node] = byNode[e.node] || []).push(e) })
   const nodeStatus = {}
-  events.forEach((e) => { nodeStatus[e.node] = e.status })
+  Object.keys(byNode).forEach((n) => { nodeStatus[n] = byNode[n][byNode[n].length - 1].status })
+  // any node the pipeline reported that isn't in the canonical list still gets a card
+  const dagNodes = NODES.concat(Object.keys(byNode).filter((n) => !NODES.includes(n)))
+  // the agent thinking RIGHT NOW = the running node with the freshest event
+  let liveNode = null, liveTs = -1
+  dagNodes.forEach((n) => {
+    const s = nodeStatus[n]
+    if (s === 'started' || s === 'working') {
+      const t = byNode[n][byNode[n].length - 1].ts || 0
+      if (t >= liveTs) { liveTs = t; liveNode = n }
+    }
+  })
   const feed = [...events].reverse().slice(0, 7)
+
+  /* ── agent-log drawer: click any node, during OR after the run, to replay
+     everything that agent did. ?log=<node> deep-links a drawer open. ── */
+  const [openNode, setOpenNode] = useState(() => {
+    try { return new URLSearchParams(location.search).get('log') } catch { return null }
+  })
+  const firstShown = useRef(true)
+  useEffect(() => {
+    if (firstShown.current) { firstShown.current = false; return }
+    setOpenNode(null) // switching runs closes the previous run's log
+  }, [shownId])
+  useEffect(() => {
+    if (!openNode) return
+    const onKey = (e) => { if (e.key === 'Escape') setOpenNode(null) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [openNode])
+  const closeRef = useRef(null)
+  useEffect(() => { if (openNode) closeRef.current?.focus() }, [openNode])
+  const openEvents = openNode ? (byNode[openNode] || []) : []
+  // auto-follow the tail while the drawer is open on a live agent
+  const logRef = useRef(null)
+  useEffect(() => { if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight }, [openNode, openEvents.length])
+  const agg = openEvents.reduce((a, e) => {
+    if (e.costUsd) a.cost += e.costUsd
+    if (e.tokens) a.tok += e.tokens
+    if (e.model) a.models.add(e.model)
+    return a
+  }, { cost: 0, tok: 0, models: new Set() })
 
   // The delivered site URL + its brand radio ad — surfaced ON the board so the live
   // link and the ElevenLabs voice ad are one click away, not buried in the feed text.
@@ -137,7 +233,7 @@ export default function MissionControl() {
       <header className="mc-head">
         <div className="wordmark">MERCURY <span className="glyph">☿</span> WORKS</div>
         <div className="stats">
-          <button className="autopilot-btn" onClick={() => enqueueBatch({ count: 3 })} title="Ship 3 more real sites — uncapped overflow points">Autopilot ▶</button>
+          <button className="autopilot-btn" onClick={() => commission(3)} title="Ship 3 more real sites — uncapped overflow points">Autopilot ▶</button>
           <div className="stat"><span>JOBS</span><b>{jobs.length}</b></div>
           <div className="stat"><span>SIGNUPS</span><b>{leads}</b></div>
           <div className="stat"><span>MODEL</span><b>GPT-5.6 Sol</b></div>
@@ -161,7 +257,7 @@ export default function MissionControl() {
                   <span className="rsep">·</span>
                   <span className="rdur">{fmtDur(durSec)}</span>
                   {finished && (
-                    <button className="commission" onClick={() => enqueueBatch({ count: 1 })}>
+                    <button className="commission" onClick={() => commission(1)}>
                       commission a new run →
                     </button>
                   )}
@@ -192,24 +288,44 @@ export default function MissionControl() {
                 </div>
               ) : (
                 <div className="dag" data-dag-pane key={shownId}>
-                  {NODES.map((n, i) => {
+                  {dagNodes.map((n, i) => {
+                    const evs = byNode[n] || []
                     const s = nodeStatus[n]
                     const pulsing = s === 'started' || s === 'working'
+                    const isLive = n === liveNode
+                    const last = evs[evs.length - 1]
                     return (
-                      <div
+                      <button
                         key={n}
+                        type="button"
                         data-node={n}
                         data-status={pulsing ? 'running' : (s || 'idle')}
-                        className={'node' + (pulsing ? ' pulse' : '') + (s === 'done' ? ' done' : '')}
+                        className={'node' + (pulsing ? ' pulse' : '') + (s === 'done' ? ' done' : '') + (isLive ? ' live' : '')}
                         style={{ borderColor: col(s), animationDelay: (i * 0.03) + 's' }}
+                        onClick={() => setOpenNode(n)}
+                        aria-haspopup="dialog"
+                        aria-label={(LABEL[n] || cap(n)) + ' — ' + (evs.length ? evs.length + ' logged event' + (evs.length === 1 ? '' : 's') : 'no events yet') + ' — open agent log'}
                       >
-                        <div className="ntop">
+                        <span className="ntop">
                           <span className="ndot" style={{ background: col(s) }} />
+                          {evs.length > 0 && <span className="ncount">{evs.length} ev</span>}
                           <span className="nglyph" style={{ color: s ? col(s) : 'var(--faint)' }}>{NGLYPH[s] || '·'}</span>
-                        </div>
-                        <div className="nname">{LABEL[n]}</div>
-                        <div className="nmodel">{NODE_MODEL[n] || 'GPT-5.6 Sol'}</div>
-                      </div>
+                        </span>
+                        <span className="nname">{LABEL[n] || cap(n)}</span>
+                        <span className="nmodel">{NODE_MODEL[n] || 'GPT-5.6 Sol'}</span>
+                        {isLive ? (
+                          <span className="nstream" aria-live="polite">
+                            {evs.slice(-3).map((e, k, arr) => (
+                              <span key={e._id} className={'nsline' + (k === arr.length - 1 ? ' now' : '')}>
+                                <span className="nsg" style={{ color: col(e.status) }}>{NGLYPH[e.status] || '·'}</span>
+                                <span className="nsnote">{e.note || e.status}</span>
+                              </span>
+                            ))}
+                          </span>
+                        ) : (last && last.note ? (
+                          <span className="nlast">{last.note}</span>
+                        ) : null)}
+                      </button>
                     )
                   })}
                 </div>
@@ -220,10 +336,11 @@ export default function MissionControl() {
                   <div className="fline fempty">awaiting first event on this run…</div>
                 )}
                 {feed.map((e, i) => (
-                  <div key={e._id} className="fline" style={{ opacity: 1 - i * 0.11 }}>
+                  <button key={e._id} type="button" className="fline" style={{ opacity: 1 - i * 0.11 }}
+                    onClick={() => setOpenNode(e.node)} title={'Open the ' + (LABEL[e.node] || e.node) + ' agent log'}>
                     <span className="fdot" style={{ background: col(e.status) }} />
-                    <b>{LABEL[e.node] || e.node}</b> <em>{e.status}</em> {e.note}
-                  </div>
+                    <b>{LABEL[e.node] || e.node}</b> <em>{e.status}</em> <span className="fnote">{e.note}</span>
+                  </button>
                 ))}
               </div>
             </>
@@ -231,7 +348,7 @@ export default function MissionControl() {
             <div className="idle">
               <div className="big-glyph">☿</div>
               <p>The agency is open — scan to commission</p>
-              <button className="idle-hint" onClick={() => enqueueBatch({ count: 3 })}>or hit Autopilot ▶</button>
+              <button className="idle-hint" onClick={() => commission(3)}>or hit Autopilot ▶</button>
             </div>
           )}
         </section>
@@ -308,6 +425,63 @@ export default function MissionControl() {
           </div>
         </aside>
       </div>
+
+      {/* ---- agent-log drawer: the FULL replay of one agent's work ---- */}
+      {openNode && shown && (
+        <div className="drawer-wrap" onClick={() => setOpenNode(null)}>
+          <aside className="drawer" role="dialog" aria-modal="true"
+            aria-label={(LABEL[openNode] || cap(openNode)) + ' agent log'}
+            onClick={(e) => e.stopPropagation()}>
+            <div className="drawer-head">
+              <div className="drawer-id">
+                <span className="drawer-kicker">agent log · run {String(shown._id).slice(-6).toUpperCase()}</span>
+                <h2 className="drawer-title">{LABEL[openNode] || cap(openNode)}</h2>
+                <span className="drawer-sub">
+                  {NODE_MODEL[openNode] || 'GPT-5.6 Sol'}
+                  {openEvents.length > 0 && <> · {openEvents.length} event{openEvents.length === 1 ? '' : 's'}</>}
+                  {nodeStatus[openNode] && <> · {NGLYPH[nodeStatus[openNode]] || '·'} {nodeStatus[openNode]}</>}
+                </span>
+              </div>
+              <button ref={closeRef} className="drawer-x" onClick={() => setOpenNode(null)} aria-label="Close agent log">✕</button>
+            </div>
+            {(agg.cost > 0 || agg.tok > 0 || agg.models.size > 0) && (
+              <div className="drawer-stats">
+                {agg.models.size > 0 && <span className="dstat"><span>model</span><b>{[...agg.models].join(', ')}</b></span>}
+                {agg.cost > 0 && <span className="dstat"><span>cost</span><b>{money(agg.cost)}</b></span>}
+                {agg.tok > 0 && <span className="dstat"><span>tokens</span><b>{agg.tok.toLocaleString()}</b></span>}
+              </div>
+            )}
+            <ol className="drawer-log" ref={logRef}>
+              {openEvents.length === 0 && (
+                <li className="dempty">No events yet — this agent hasn't picked up the run.</li>
+              )}
+              {openEvents.map((e) => (
+                <li key={e._id} className="devent">
+                  <span className="dglyph" style={{ color: col(e.status) }}>{NGLYPH[e.status] || '·'}</span>
+                  <span className="dbody">
+                    <span className="dmeta">
+                      <em className="dstatus" style={{ color: col(e.status) }}>{e.status}</em>
+                      <span className="dtime">{clock(e.ts)}</span>
+                      {e.model && <span>{e.model}</span>}
+                      {e.costUsd != null && e.costUsd > 0 && <span>{money(e.costUsd)}</span>}
+                      {e.tokens != null && e.tokens > 0 && <span>{e.tokens.toLocaleString()} tok</span>}
+                    </span>
+                    {e.note && <span className="dnote">{e.note}</span>}
+                  </span>
+                </li>
+              ))}
+              {openNode === liveNode && openEvents.length > 0 && (
+                <li className="devent">
+                  <span className="dglyph" style={{ color: 'var(--accent-lt)' }}>▲</span>
+                  <span className="dbody">
+                    <span className="dnote">working<span className="dcaret" aria-hidden="true" /></span>
+                  </span>
+                </li>
+              )}
+            </ol>
+          </aside>
+        </div>
+      )}
 
       {/* ---- heartbeat line: the room's live pulse ---- */}
       <footer className="mc-foot">
