@@ -43,6 +43,39 @@ http.route({
   }),
 });
 
+// Cross-track signups: every shipped *.pages.dev landing page's email form POSTs here.
+// Cross-origin (pages.dev -> convex.site) so it needs CORS + an OPTIONS preflight.
+const LEAD_CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+http.route({
+  path: "/lead",
+  method: "OPTIONS",
+  handler: httpAction(async () => new Response(null, { status: 204, headers: LEAD_CORS })),
+});
+http.route({
+  path: "/lead",
+  method: "POST",
+  handler: httpAction(async (ctx, req) => {
+    const b = await req.json().catch(() => null);
+    if (!b || !b.email) return new Response("bad payload", { status: 400, headers: LEAD_CORS });
+    const jobId = b.job_id ?? b.jobId;
+    try {
+      await ctx.runMutation(api.jobs.captureLead, {
+        email: String(b.email),
+        sourceUrl: String(b.sourceUrl ?? ""),
+        jobId: jobId || undefined,
+        consent: Boolean(b.consent ?? false),
+      });
+    } catch {
+      // never fail a visitor's signup on a bad optional field (e.g. a stale jobId)
+    }
+    return new Response("ok", { status: 200, headers: LEAD_CORS });
+  }),
+});
+
 // Razorpay webhook: on payment_link.paid, flip the job to PAID (unlocks deliverables live).
 http.route({
   path: "/razorpay-webhook",
