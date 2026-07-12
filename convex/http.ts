@@ -43,6 +43,46 @@ http.route({
   }),
 });
 
+// Emergent-org roster. GET returns the active roles as JSON — the skill curls this at intake to
+// staff the pipeline. POST persists a role the MD SPAWNED mid-brief (e.g. Compliance Reviewer) so
+// the org "remembers" its new structure. Tolerant of hand-written payloads, like /set-vertical.
+http.route({
+  path: "/roles",
+  method: "GET",
+  handler: httpAction(async (ctx) => {
+    const roles = await ctx.runQuery(api.agentRoles.listRoles, {});
+    return new Response(JSON.stringify(roles), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+});
+http.route({
+  path: "/roles",
+  method: "POST",
+  handler: httpAction(async (ctx, req) => {
+    const b = await req.json().catch(() => null);
+    const roleName = b?.roleName ?? b?.role_name;
+    if (!b || !roleName || !b.mission) return new Response("bad payload", { status: 400 });
+    const asArray = (x: unknown) =>
+      Array.isArray(x) ? x.map(String) : typeof x === "string" && x.trim() ? x.split(",").map((s) => s.trim()).filter(Boolean) : [];
+    const maxRetries = b.maxRetriesBeforeEscalate ?? b.max_retries;
+    try {
+      await ctx.runMutation(api.agentRoles.addRole, {
+        roleName: String(roleName),
+        mission: String(b.mission),
+        allowedTools: asArray(b.allowedTools ?? b.allowed_tools),
+        guardrails: asArray(b.guardrails),
+        maxRetriesBeforeEscalate: typeof maxRetries === "number" ? maxRetries : 2,
+        active: typeof b.active === "boolean" ? b.active : undefined,
+      });
+    } catch {
+      return new Response("bad payload", { status: 400 });
+    }
+    return new Response("ok", { status: 200 });
+  }),
+});
+
 // Cross-track signups: every shipped *.pages.dev landing page's email form POSTs here.
 // Cross-origin (pages.dev -> convex.site) so it needs CORS + an OPTIONS preflight.
 const LEAD_CORS = {

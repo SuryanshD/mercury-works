@@ -27,7 +27,7 @@ A request supplies `JOB_ID` and a one-line client brief. You are the **Managing 
 - **CRITICAL: write files with the terminal tool** (a bash heredoc or a `python3` replace), **NOT the `write_file` tool** — the write-guard blocks `write_file` for `/tmp` paths.
 
 # Procedure
-1. **intake** — Parse JOB_ID + brief. Classify the **vertical** (one word). POST it: `curl -s -m 5 -X POST "$CONVEX_SET_VERTICAL_URL" -H 'Content-Type: application/json' -d "{\"job_id\":\"$JOB_ID\",\"vertical\":\"<vertical>\"}"`. Report `intake done`.
+1. **intake** — Parse JOB_ID + brief. Classify the **vertical** (one word). POST it: `curl -s -m 5 -X POST "$CONVEX_SET_VERTICAL_URL" -H 'Content-Type: application/json' -d "{\"job_id\":\"$JOB_ID\",\"vertical\":\"<vertical>\"}"`. **Staff the pipeline from the live roster** (roster URL = the report URL with `/report`→`/roles`): `ROLES=$(curl -s -m 5 "${CONVEX_REPORT_URL%/report}/roles")` — each stage below is owned by a role in `$ROLES`; honor that role's `allowedTools`, `guardrails`, and `maxRetriesBeforeEscalate` (staff the CORE roster from memory if `$ROLES` is empty). Then run the **emergent-role check** (see "# Emergent roles" — additive, never blocks CORE). Report `intake done`.
 2. **research** — `bash $SK/scripts/linkup_search.sh "<vertical> market 2025: positioning gaps + top competitors for: <brief>" standard`. If `LINKUP_UNAVAILABLE`, report `research failed` and reason from knowledge. Else report `research done` (note that it has citations).
 3. **naming** — Propose 3 name + tagline options fitting the positioning gap. Report `naming done`.
 4. **review** — Score candidates on {distinctiveness, availability, brief-fit}; run `bash $SK/scripts/linkup_search.sh "Is '<top name>' an existing brand and is <slug>.com taken?" standard`. If the top pick is taken or weak: report `review rejected "<reason>"`, redo naming **once**, report `review revised "<winner>"`. Else report `review done`. Lock the **winning name + tagline**.
@@ -40,6 +40,25 @@ A request supplies `JOB_ID` and a one-line client brief. You are the **Managing 
 8. **publish** — `bash $SK/scripts/deploy_page.sh "<winning name>" $WORK` — this deploys the whole dir (index.html + logo.png + ad.mp3) in one shot. Capture the `DEPLOYED https://...pages.dev` URL. Report `publish done "<live URL>"`.
 9. **qa** — `curl -s -o /dev/null -w '%{http_code}' "<live URL>"` must be 200 (retry publish once if not). Report `deliver done "<live URL>"`.
 10. **learn** — Write `/opt/data/skills/agency/<vertical>-identity/SKILL.md` (via terminal) capturing the winning positioning + naming + accent + copy structure so the next same-vertical brief is faster. Report `learn done`.
+
+# Emergent roles (additive branch — the org staffs itself, never blocks CORE)
+For a special brief the MD **spawns a NEW role** on top of the base roster. This is additive: the CORE
+pipeline above still runs in full — the spawned role adds a check, it is never a gate.
+Trigger the branch at intake:
+- **REGULATED brief** (health / finance / legal / medical / insurance / anything with compliance claims) → spawn **"Compliance Reviewer"** — vet the copy + claims for regulated-industry risk before publish.
+- **NON-ENGLISH brief** (the brief is written in, or asks to launch in, a non-English language) → spawn **"Localization Specialist"** — adapt name, copy, and CTA to the target language/locale.
+
+When you spawn a role, do BOTH:
+1. **Show it on the DAG** — report it via `report_progress.sh` on the `review` node (an existing node id), naming the spawned role in the note, e.g.
+   `bash $SK/scripts/report_progress.sh "$JOB_ID" review started "spawned Compliance Reviewer for regulated brief"`
+   and, once its check passes, `... review done "Compliance Reviewer: claims vetted"`. (If the base Reviewer also uses `review`, sequence them so the DAG reads cleanly.)
+2. **Persist it so the org remembers** — POST the new role to the roster (base URL = report URL with `/report` → `/roles`):
+   ```
+   curl -s -m 5 -X POST "${CONVEX_REPORT_URL%/report}/roles" -H 'Content-Type: application/json' \
+     -d "{\"roleName\":\"Compliance Reviewer\",\"mission\":\"Vet copy and claims for regulated-industry risk before publish\",\"allowedTools\":[\"web\",\"file\"],\"guardrails\":[\"flag unverifiable claims\",\"never block CORE\"],\"maxRetriesBeforeEscalate\":2}"
+   ```
+   (For a non-English brief use `roleName` "Localization Specialist" with a fitting mission/guardrails.) The POST upserts by `roleName`, so re-spawning the same role on a later brief is safe.
+If spawning or its check fails, report `review failed`, degrade, and continue CORE — a spawned role must never leave the big screen blank.
 
 # Verification
 Vertical set; a real, premium `*.pages.dev` site is live and 200 with logo + (if available) voice ad + a Dodo checkout link; every stage reported; CORE never blocked by a premium failure.

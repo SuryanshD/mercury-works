@@ -70,4 +70,18 @@ export default defineSchema({
     consent: v.boolean(),
     ts: v.number(),
   }),
+
+  // The emergent org: the MD staffs the pipeline from this live roster and can SPAWN new roles
+  // (e.g. Compliance Reviewer for a regulated brief) that the org then "remembers".
+  // Read at runtime by the skill via GET /roles; edited live from Mission Control via addRole.
+  agentRoles: defineTable({
+    roleName: v.string(),
+    mission: v.string(),
+    allowedTools: v.array(v.string()), // subset of: web terminal image_gen tts file code_execution
+    guardrails: v.array(v.string()),
+    maxRetriesBeforeEscalate: v.number(),
+    active: v.boolean(),
+  })
+    .index("by_active", ["active"])
+    .index("by_roleName", ["roleName"]),
 });
