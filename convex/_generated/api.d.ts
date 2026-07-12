@@ -9,6 +9,7 @@
  */
 
 import type * as agentRoles from "../agentRoles.js";
+import type * as autopilot from "../autopilot.js";
 import type * as http from "../http.js";
 import type * as jobs from "../jobs.js";
 import type * as report from "../report.js";
@@ -21,6 +22,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   agentRoles: typeof agentRoles;
+  autopilot: typeof autopilot;
   http: typeof http;
   jobs: typeof jobs;
   report: typeof report;

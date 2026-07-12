@@ -1,4 +1,4 @@
-import { useQuery } from 'convex/react'
+import { useQuery, useMutation } from 'convex/react'
 import { api } from '../convex/_generated/api'
 
 const NODES = ['intake','research','naming','review','copy','engineer','publish','voice','invoice','qa','learn']
@@ -15,6 +15,7 @@ export default function MissionControl() {
   const events = useQuery(api.jobs.jobEvents, hero ? { jobId: hero._id } : 'skip') || []
   const delta = useQuery(api.jobs.latestVerticalWithDelta)
   const leads = useQuery(api.jobs.leadCount) ?? 0
+  const enqueueBatch = useMutation(api.autopilot.enqueueBatch)
 
   const nodeStatus = {}
   events.forEach((e) => { nodeStatus[e.node] = e.status })
@@ -26,6 +27,7 @@ export default function MissionControl() {
       <header className="mc-head">
         <div className="wordmark">MERCURY <span className="glyph">☿</span> WORKS</div>
         <div className="stats">
+          <button className="autopilot-btn" onClick={() => enqueueBatch({ count: 3 })} title="Ship 3 more real sites — uncapped overflow points">Autopilot ▶</button>
           <div className="stat"><span>JOBS</span><b>{jobs.length}</b></div>
           <div className="stat"><span>SIGNUPS</span><b>{leads}</b></div>
           <div className="stat"><span>MODEL</span><b>GPT-5.6 Sol</b></div>
