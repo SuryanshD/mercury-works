@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{NAME}} — {{TAGLINE}}</title>
+<meta name="description" content="{{TAGLINE}}">
+<style>
+  :root{ --bg:#0B0E14; --panel:#12161F; --ink:#E6E9EF; --muted:#8A93A6; --accent:#F5A623; --line:#222836 }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{font-family:"Space Grotesk",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px;margin:0 auto;padding:0 22px}
+  header{padding:26px 0;display:flex;align-items:center;gap:12px}
+  .logo{width:40px;height:40px;border-radius:9px;object-fit:cover;background:var(--panel);border:1px solid var(--line)}
+  .brand{font-weight:700;letter-spacing:.02em;font-size:18px}
+  .hero{padding:56px 0 40px;text-align:center}
+  .tag{display:inline-block;font-size:13px;color:var(--accent);border:1px solid var(--line);border-radius:999px;padding:6px 14px;margin-bottom:22px}
+  h1{font-size:clamp(34px,7vw,60px);line-height:1.05;margin:0 0 16px;letter-spacing:-.02em}
+  .sub{font-size:clamp(16px,2.4vw,20px);color:var(--muted);max-width:620px;margin:0 auto 30px}
+  .cta{display:inline-flex;gap:10px;align-items:center;background:var(--accent);color:#141414;font-weight:700;text-decoration:none;padding:15px 26px;border-radius:12px;font-size:16px;border:0;cursor:pointer}
+  audio{margin-top:26px;width:min(420px,90%)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;padding:24px 0 8px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}
+  .card h3{margin:0 0 8px;font-size:17px}
+  .card p{margin:0;color:var(--muted);font-size:14px}
+  .signup{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:28px;margin:40px 0;text-align:center}
+  .signup h2{margin:0 0 6px;font-size:22px}
+  .signup p{color:var(--muted);margin:0 0 18px;font-size:14px}
+  form{display:flex;gap:10px;max-width:440px;margin:0 auto;flex-wrap:wrap;justify-content:center}
+  input[type=email]{flex:1;min-width:200px;background:#0B0E14;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:13px 14px;font-size:15px}
+  .ok{color:#3FB68B;font-size:14px;margin-top:12px;display:none}
+  footer{border-top:1px solid var(--line);padding:26px 0;color:var(--muted);font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img class="logo" src="{{LOGO_URL}}" alt="{{NAME}} logo" onerror="this.style.visibility='hidden'">
+    <span class="brand">{{NAME}}</span>
+  </header>
+
+  <section class="hero">
+    <span class="tag">{{TAGLINE}}</span>
+    <h1>{{HEADLINE}}</h1>
+    <p class="sub">{{HERO_COPY}}</p>
+    <a class="cta" href="#get-started">{{CTA_TEXT}} →</a>
+    <!-- voice ad (ElevenLabs); hidden until an audio URL is injected -->
+    <audio controls src="{{AUDIO_URL}}" onerror="this.style.display='none'" style="{{AUDIO_STYLE}}"></audio>
+  </section>
+
+  <section class="grid">
+    <div class="card"><h3>{{FEATURE_1_TITLE}}</h3><p>{{FEATURE_1_BODY}}</p></div>
+    <div class="card"><h3>{{FEATURE_2_TITLE}}</h3><p>{{FEATURE_2_BODY}}</p></div>
+    <div class="card"><h3>{{FEATURE_3_TITLE}}</h3><p>{{FEATURE_3_BODY}}</p></div>
+  </section>
+
+  <section class="signup" id="get-started">
+    <h2>Get early access</h2>
+    <p>{{SIGNUP_PROMPT}}</p>
+    <form id="lead">
+      <input type="email" name="email" placeholder="you@email.com" required>
+      <button class="cta" type="submit">Notify me</button>
+    </form>
+    <div class="ok" id="ok">You're on the list. ✓</div>
+  </section>
+
+  <footer>© {{NAME}} · shipped live by Mercury Works, an autonomous agency on Hermes</footer>
+</div>
+
+<script>
+  // Cross-track signup capture → the /lead Worker → Convex leads table.
+  var LEAD_ENDPOINT = "{{LEAD_ENDPOINT}}";
+  document.getElementById('lead').addEventListener('submit', function(e){
+    e.preventDefault();
+    var email = e.target.email.value;
+    try {
+      if (LEAD_ENDPOINT && LEAD_ENDPOINT.indexOf('http') === 0) {
+        fetch(LEAD_ENDPOINT, {method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({email: email, sourceUrl: location.href, consent: true})});
+      }
+    } catch (_) {}
+    document.getElementById('ok').style.display = 'block';
+    e.target.reset();
+  });
+</script>
+</body>
+</html>
