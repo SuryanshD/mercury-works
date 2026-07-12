@@ -5,149 +5,127 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{NAME}} — {{TAGLINE}}</title>
 <meta name="description" content="{{TAGLINE}}">
-<meta property="og:title" content="{{NAME}}">
-<meta property="og:description" content="{{TAGLINE}}">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<meta property="og:title" content="{{NAME}}"><meta property="og:description" content="{{TAGLINE}}">
+<script>document.documentElement.className+=' js';</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --accent: {{ACCENT}};
-    --paper:#F6F6F3; --ink:#15171C; --muted:#5C6472; --line:#E3E3DD; --card:#FBFBF9;
-    --maxw:1120px;
+    --accent:{{ACCENT}}; --ink:#F4EFE8; --muted:#A7A199; --bg:#0B0A0C; --panel:#141216;
+    --line:rgba(255,255,255,.08);
+    --grad-1:{{GRAD1}}; --grad-2:{{GRAD2}}; --grad-3:{{GRAD3}}; --grad-4:{{GRAD4}};
   }
-  *{box-sizing:border-box}
-  html{scroll-behavior:smooth}
-  body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,system-ui,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
-  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 32px}
-  a{color:inherit}
-  .serif{font-family:Fraunces,Georgia,serif;font-weight:500}
-  .eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 28px}
+  .serif{font-family:Fraunces,Georgia,serif}
+  .eyebrow{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);font-weight:600}
 
-  /* nav */
-  nav{display:flex;align-items:center;justify-content:space-between;padding:26px 0}
-  .brand{display:flex;align-items:center;gap:12px;font-weight:600;font-size:17px;letter-spacing:-.01em}
+  /* HERO with animated shader gradient */
+  .hero{position:relative;min-height:92vh;display:flex;align-items:center;overflow:hidden;border-bottom:1px solid var(--line)}
+  #hero-gradient{position:absolute;inset:0;width:100%;height:100%;z-index:0;
+    /* CSS fallback painted underneath, so a WebGL/JS failure is invisible */
+    background:radial-gradient(120% 120% at 20% 10%, var(--grad-3), transparent 55%), radial-gradient(120% 120% at 90% 90%, var(--grad-2), transparent 55%), var(--grad-1);}
+  .hero::after{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(11,10,12,.35),rgba(11,10,12,.72))}
+  .hero-inner{position:relative;z-index:2;width:100%}
+  nav{position:absolute;top:0;left:0;right:0;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:24px 0}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;width:100%}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:600;font-size:17px}
   .brand img{width:34px;height:34px;border-radius:8px;object-fit:cover}
-  .by{font-size:12px;color:var(--muted)}
+  h1{font-family:Fraunces,serif;font-weight:600;font-size:clamp(46px,8vw,104px);line-height:.96;letter-spacing:-.02em;margin:16px 0 20px;text-wrap:balance}
+  .lead{font-size:clamp(17px,2.2vw,22px);color:var(--muted);max-width:34ch;margin:0 0 32px}
+  .cta{display:inline-flex;align-items:center;gap:9px;background:var(--accent);color:#0B0A0C;font-weight:700;text-decoration:none;padding:16px 30px;border-radius:12px;font-size:16px;border:0;cursor:pointer;transition:transform .2s,box-shadow .2s}
+  .cta:hover{transform:translateY(-2px);box-shadow:0 16px 40px -12px var(--accent)}
+  .cta.ghost{background:rgba(255,255,255,.06);color:var(--ink);border:1px solid var(--line);margin-left:12px}
 
-  /* hero */
-  .hero{display:grid;grid-template-columns:1.15fr .85fr;gap:56px;align-items:center;padding:40px 0 76px;border-bottom:1px solid var(--line)}
-  h1{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:clamp(44px,6.4vw,84px);line-height:.98;letter-spacing:-.02em;margin:18px 0 22px;text-wrap:balance}
-  .lead{font-size:clamp(17px,2vw,21px);color:var(--muted);max-width:30ch;margin:0 0 30px}
-  .cta-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
-  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;font-weight:600;text-decoration:none;padding:15px 26px;border-radius:10px;font-size:15.5px;border:0;cursor:pointer;transition:transform .15s ease,filter .15s ease}
-  .btn:hover{transform:translateY(-1px);filter:brightness(1.05)}
-  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
-  .hero-visual{aspect-ratio:1;border-radius:20px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;overflow:hidden;box-shadow:0 30px 60px -30px rgba(20,22,28,.25)}
-  .hero-visual img{width:66%;height:66%;object-fit:contain}
-  .hero-visual .mono{font-family:Fraunces,serif;font-size:64px;color:var(--accent)}
-
-  /* manifesto */
-  .band{padding:78px 0;border-bottom:1px solid var(--line)}
-  .band .serif{font-size:clamp(26px,3.4vw,40px);line-height:1.25;letter-spacing:-.01em;max-width:20ch;margin:14px 0 0;text-wrap:balance}
+  section{padding:96px 0;border-bottom:1px solid var(--line)}
+  .band .serif{font-size:clamp(28px,4vw,46px);line-height:1.2;letter-spacing:-.01em;max-width:22ch;text-wrap:balance}
   .band .serif b{color:var(--accent);font-weight:600}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px;backdrop-filter:blur(6px)}
+  .card .fnum{font-family:Fraunces,serif;color:var(--accent);font-size:15px}
+  .card h3{margin:12px 0 8px;font-size:18px}
+  .card p{margin:0;color:var(--muted);font-size:14px}
+  audio{width:min(440px,92%);margin-top:8px}
+  .close{text-align:center}
+  .close h2{font-family:Fraunces,serif;font-weight:600;font-size:clamp(30px,5vw,54px);letter-spacing:-.02em;margin:8px auto 12px;max-width:16ch;text-wrap:balance}
+  .close p{color:var(--muted);max-width:44ch;margin:0 auto 26px}
+  form{display:flex;gap:12px;max-width:460px;margin:0 auto;flex-wrap:wrap;justify-content:center}
+  input[type=email]{flex:1;min-width:220px;background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:15px;font:inherit;font-size:15px}
+  input[type=email]:focus{outline:2px solid var(--accent)}
+  .ok{color:#8FC96E;margin-top:14px;display:none}
+  .buy{margin-top:22px;font-size:14px;color:var(--muted)} .buy a{color:var(--accent);font-weight:600;text-decoration:none}
+  footer{padding:34px 0;color:var(--muted);font-size:13px;text-align:center}
 
-  /* features */
-  .feats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;padding:64px 0;border-bottom:1px solid var(--line)}
-  .feat{padding:8px 34px 8px 0}
-  .feat:not(:last-child){border-right:1px solid var(--line)}
-  .feat h3{font-size:19px;margin:14px 0 8px;font-weight:600}
-  .feat p{margin:0;color:var(--muted);font-size:15px}
-  .fnum{font-family:Fraunces,serif;font-size:15px;color:var(--accent)}
-
-  /* audio */
-  .voice{padding:56px 0;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:24px;flex-wrap:wrap}
-  .voice .eyebrow{flex:0 0 auto}
-  audio{flex:1;min-width:260px;height:44px}
-
-  /* signup + checkout */
-  .close{padding:80px 0}
-  .close h2{font-family:Fraunces,serif;font-weight:500;font-size:clamp(30px,4vw,48px);letter-spacing:-.02em;margin:10px 0 8px;text-wrap:balance}
-  .close p{color:var(--muted);margin:0 0 26px;max-width:44ch}
-  form{display:flex;gap:12px;flex-wrap:wrap;max-width:480px}
-  input[type=email]{flex:1;min-width:220px;background:#fff;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:15px 16px;font:inherit;font-size:15.5px}
-  input[type=email]:focus{outline:2px solid var(--accent);outline-offset:1px}
-  .ok{color:#227A55;margin-top:14px;font-size:14px;display:none}
-  .buy{margin-top:22px;display:inline-flex;align-items:center;gap:10px;color:var(--muted);font-size:14px}
-  .buy a{color:var(--accent);font-weight:600;text-decoration:none;border-bottom:1px solid transparent}
-  .buy a:hover{border-color:var(--accent)}
-
-  footer{border-top:1px solid var(--line);padding:34px 0;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
-
-  /* motion */
-  .rise{opacity:0;transform:translateY(14px);animation:rise .7s cubic-bezier(.2,.7,.2,1) forwards}
-  .rise:nth-child(2){animation-delay:.06s}.rise:nth-child(3){animation-delay:.12s}
-  @keyframes rise{to{opacity:1;transform:none}}
-  @media (prefers-reduced-motion:reduce){.rise{animation:none;opacity:1;transform:none}}
-  @media (max-width:820px){.hero{grid-template-columns:1fr;gap:36px}.hero-visual{max-width:360px}.feats{grid-template-columns:1fr}.feat{border-right:0;border-bottom:1px solid var(--line);padding:22px 0}.feat:last-child{border-bottom:0}}
+  /* reveal hooks — only hidden when JS alive + motion allowed */
+  html.js [data-reveal]{opacity:0}
+  @media (prefers-reduced-motion:reduce){html.js [data-reveal]{opacity:1 !important}}
+  @media (max-width:800px){.grid{grid-template-columns:1fr}.cta.ghost{margin:12px 0 0}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <nav>
-    <span class="brand"><img src="{{LOGO_URL}}" alt="" onerror="this.style.display='none'">{{NAME}}</span>
-    <span class="by">a launch kit, shipped live</span>
-  </nav>
-
   <header class="hero">
-    <div class="rise">
+    <canvas id="hero-gradient" data-transition-in></canvas>
+    <nav><div class="wrap">
+      <span class="brand"><img src="{{LOGO_URL}}" alt="" onerror="this.style.display='none'">{{NAME}}</span>
       <span class="eyebrow">{{TAGLINE}}</span>
-      <h1>{{HEADLINE}}</h1>
-      <p class="lead">{{HERO_COPY}}</p>
-      <div class="cta-row">
-        <a class="btn" href="#get">{{CTA_TEXT}}</a>
-        <a class="btn ghost" href="#story">Read the story</a>
-      </div>
-    </div>
-    <div class="hero-visual rise">
-      <img src="{{LOGO_URL}}" alt="{{NAME}} logo" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'mono',textContent:'{{NAME}}'.slice(0,2)}))">
-    </div>
+    </div></nav>
+    <div class="hero-inner"><div class="wrap">
+      <h1 data-reveal>{{HEADLINE}}</h1>
+      <p class="lead" data-reveal>{{HERO_COPY}}</p>
+      <div data-reveal><a class="cta" href="#get">{{CTA_TEXT}} →</a><a class="cta ghost" href="#story">The story</a></div>
+    </div></div>
   </header>
 
-  <section class="band" id="story">
-    <span class="eyebrow">Why now</span>
-    <p class="serif">{{MANIFESTO}}</p>
-  </section>
+  <section class="band" id="story"><div class="wrap">
+    <span class="eyebrow" data-reveal>Why now</span>
+    <p class="serif" data-reveal>{{MANIFESTO}}</p>
+  </div></section>
 
-  <section class="feats">
-    <div class="feat"><div class="fnum">01</div><h3>{{FEATURE_1_TITLE}}</h3><p>{{FEATURE_1_BODY}}</p></div>
-    <div class="feat"><div class="fnum">02</div><h3>{{FEATURE_2_TITLE}}</h3><p>{{FEATURE_2_BODY}}</p></div>
-    <div class="feat"><div class="fnum">03</div><h3>{{FEATURE_3_TITLE}}</h3><p>{{FEATURE_3_BODY}}</p></div>
-  </section>
+  <section><div class="wrap grid">
+    <div class="card" data-reveal><div class="fnum">01</div><h3>{{FEATURE_1_TITLE}}</h3><p>{{FEATURE_1_BODY}}</p></div>
+    <div class="card" data-reveal><div class="fnum">02</div><h3>{{FEATURE_2_TITLE}}</h3><p>{{FEATURE_2_BODY}}</p></div>
+    <div class="card" data-reveal><div class="fnum">03</div><h3>{{FEATURE_3_TITLE}}</h3><p>{{FEATURE_3_BODY}}</p></div>
+  </div></section>
 
-  <section class="voice">
-    <span class="eyebrow">Hear it</span>
-    <audio controls src="{{AUDIO_URL}}" onerror="this.closest('.voice').style.display='none'"></audio>
-  </section>
+  <section id="voice"><div class="wrap" data-reveal><span class="eyebrow">Hear it</span><br>
+    <audio controls src="{{AUDIO_URL}}" onerror="this.closest('#voice').style.display='none'"></audio>
+  </div></section>
 
-  <section class="close" id="get">
-    <span class="eyebrow">Get early access</span>
-    <h2>{{SIGNUP_HEADLINE}}</h2>
-    <p>{{SIGNUP_PROMPT}}</p>
-    <form id="lead">
-      <input type="email" name="email" placeholder="you@email.com" required>
-      <button class="btn" type="submit">Notify me</button>
-    </form>
+  <section class="close" id="get"><div class="wrap">
+    <span class="eyebrow" data-reveal>Get early access</span>
+    <h2 data-reveal>{{SIGNUP_HEADLINE}}</h2>
+    <p data-reveal>{{SIGNUP_PROMPT}}</p>
+    <form id="lead" data-reveal><input type="email" name="email" placeholder="you@email.com" required><button class="cta" type="submit">Notify me</button></form>
     <div class="ok" id="ok">You're on the list. ✓</div>
-    <div class="buy">Want the full launch kit? <a href="{{CHECKOUT_URL}}" target="_blank" rel="noreferrer">Buy it →</a></div>
-  </section>
-</div>
+    <div class="buy" id="buyrow">Want the full launch kit? <a href="{{CHECKOUT_URL}}" target="_blank" rel="noreferrer">Buy it →</a></div>
+  </div></section>
 
-<footer class="wrap">
-  <span>© {{NAME}}</span>
-  <span>shipped live by Mercury Works — an autonomous agency on Hermes</span>
-</footer>
+  <footer class="wrap">© {{NAME}} · shipped live by Mercury Works — an autonomous agency on Hermes</footer>
 
+<!-- animated shader-gradient hero (stripe-gradient, MIT ~12KB, degrade-safe) -->
+<script src="https://cdn.jsdelivr.net/npm/stripe-gradient@1.0.1/dist/main.js"></script>
+<!-- GSAP reveals (degrade-safe) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js" defer></script>
 <script>
+  var reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  // shader hero
+  (function(){ if(reduce)return; try{ var c=document.getElementById('hero-gradient');
+    if((c.getContext('webgl')||c.getContext('experimental-webgl'))&&window.Gradient){ var g=new Gradient(); g.initGradient('#hero-gradient'); } else { c.style.display='none'; }
+  }catch(e){ var el=document.getElementById('hero-gradient'); if(el) el.style.display='none'; } })();
+  // lead capture
   var LEAD="{{LEAD_ENDPOINT}}";
-  document.getElementById('lead').addEventListener('submit',function(e){
-    e.preventDefault();
-    var email=e.target.email.value;
-    try{ if(LEAD&&LEAD.indexOf('http')===0){ fetch(LEAD,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,sourceUrl:location.href,consent:true})}); } }catch(_){}
-    document.getElementById('ok').style.display='block'; e.target.reset();
+  document.getElementById('lead').addEventListener('submit',function(e){e.preventDefault();var m=e.target.email.value;try{if(LEAD&&LEAD.indexOf('http')===0)fetch(LEAD,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:m,sourceUrl:location.href,consent:true})});}catch(_){}document.getElementById('ok').style.display='block';e.target.reset();});
+  if("{{CHECKOUT_URL}}".indexOf('http')!==0){var b=document.getElementById('buyrow');if(b)b.style.display='none';}
+  // GSAP reveals
+  window.addEventListener('DOMContentLoaded',function(){
+    if(!window.gsap||reduce){document.querySelectorAll('[data-reveal]').forEach(function(el){el.style.opacity=1});return;}
+    gsap.registerPlugin(ScrollTrigger);
+    gsap.to('.hero [data-reveal]',{y:0,opacity:1,duration:.9,ease:'power3.out',stagger:.12,delay:.15,startAt:{y:28}});
+    gsap.utils.toArray('[data-reveal]').forEach(function(el){ if(el.closest('.hero'))return;
+      gsap.to(el,{y:0,opacity:1,duration:.9,ease:'power2.out',startAt:{y:40},scrollTrigger:{trigger:el,start:'top 85%',once:true}});});
   });
-  // hide the Buy row if no checkout link was injected
-  if("{{CHECKOUT_URL}}".indexOf('http')!==0){var b=document.querySelector('.buy');if(b)b.style.display='none';}
 </script>
 </body>
 </html>

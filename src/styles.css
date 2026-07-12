@@ -459,45 +459,30 @@ b{font-weight:600}
   .node.pulse,.node.pulse::after,.big-glyph,.fline,.cl-line{animation:none}
 }
 
-
 /* ============================================================
-   REACTOR CORE — molten shader glow behind the composing stage.
-   Append to the END of src/styles.css (later rule overrides the
-   existing .stage). The WebGL canvas is injected as the first
-   child of .stage by the script in index.html; here we confine,
-   dim, mask and stack it so the DATA PLANE stays untouched.
-   Palette lives in CSS vars (stripe-gradient reads them off the
-   canvas) — deliberately dark: mostly ink, amber/oxide veins.
+   REACTOR CORE (amplified) — a VISIBLE animated molten gradient in
+   the stage (pure CSS, works with zero WebGL) + the shader canvas
+   on top for extra richness. Data plane forced above; panels solid.
    ============================================================ */
-.stage{position:relative}                 /* becomes the glow's frame */
-
+.stage{
+  position:relative;
+  background:
+    radial-gradient(58% 58% at 15% 8%,  rgba(232,163,61,.30), transparent 60%),
+    radial-gradient(52% 52% at 90% 20%, rgba(181,101,26,.28), transparent 60%),
+    radial-gradient(80% 80% at 55% 112%, rgba(122,60,18,.42), transparent 66%),
+    var(--panel2);
+  background-size:200% 200%;
+  animation:reactor 22s ease-in-out infinite;
+}
+@keyframes reactor{
+  0%,100%{background-position:0% 8%, 100% 0%, 50% 100%}
+  50%    {background-position:34% 28%, 66% 40%, 44% 82%}
+}
 #reactor-canvas{
-  position:absolute; inset:0; z-index:0;   /* behind job-title/dag/feed */
-  width:100%; height:100%;
-  pointer-events:none;
-  opacity:.55;                             /* subtle: a glow, not a wall */
-  mix-blend-mode:screen;                   /* amber only ADDS light over the dark stone */
-  /* dark molten palette (must define all 4 or the lib falls back to garish defaults) */
-  --gradient-color-1:#1b1610;
-  --gradient-color-2:#6a3411;
-  --gradient-color-3:#b5651a;
-  --gradient-color-4:#241a10;
-  /* concentrate heat at the DAG (top) and fade OUT before the log feed,
-     so the mono feed text below never loses contrast */
-  -webkit-mask-image:radial-gradient(135% 105% at 50% 2%, #000 52%, transparent 100%);
-          mask-image:radial-gradient(135% 105% at 50% 2%, #000 52%, transparent 100%);
+  position:absolute; inset:0; z-index:0; width:100%; height:100%;
+  pointer-events:none; opacity:.6; mix-blend-mode:screen;
+  --gradient-color-1:#1b1610; --gradient-color-2:#6a3411;
+  --gradient-color-3:#E8A33D; --gradient-color-4:#241a10;
 }
-
-/* lift the whole data plane above the glow — nodes keep their solid
-   --panel wells, so the molten only ever shows in the 12px gutters
-   between the type-set nodes ("hot metal between the set type") */
-.stage > .job-title,
-.stage > .dag,
-.stage > .feed,
-.stage > .idle{ position:relative; z-index:1 }
-
-/* a11y + reliability: no shader for reduced-motion; stage silently
-   returns to its normal solid look (nothing else changes) */
-@media (prefers-reduced-motion: reduce){
-  #reactor-canvas{ display:none }
-}
+.stage>.job-title,.stage>.dag,.stage>.feed,.stage>.idle{position:relative;z-index:1}
+@media (prefers-reduced-motion:reduce){#reactor-canvas{display:none}.stage{animation:none}}

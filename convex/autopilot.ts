@@ -45,3 +45,23 @@ export const enqueueBatch = mutation({
     return { enqueued: ids.length };
   },
 });
+
+// Clean the board before a demo: drop test jobs + anything stuck (no event in 5 min, not delivered/paid).
+export const clearStuck = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    const all = await ctx.db.query("jobs").collect();
+    let deleted = 0;
+    for (const j of all) {
+      const isTest = /smoke test|safe to delete/i.test(j.brief);
+      const isStuck =
+        j.status !== "delivered" && j.status !== "paid" && now - (j.lastEventAt ?? 0) > 5 * 60 * 1000;
+      if (isTest || isStuck) {
+        await ctx.db.delete(j._id);
+        deleted++;
+      }
+    }
+    return { deleted };
+  },
+});
