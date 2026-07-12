@@ -1,28 +1,27 @@
 /* ============================================================
    MERCURY ☿ WORKS — "The Newsroom Reactor", vermilion edition
-   The dark cousin of the waitlist's bone editorial system:
-   same Fraunces display + IBM Plex Mono data plane, the SAME
-   single vermilion accent #B4451C — set on a warm ink ground
-   (a projector board stays a dark ops-room, never light mode).
+   Re-set on the waitlist's bone "paper" ground: same Fraunces
+   display + IBM Plex Mono data plane, the SAME single vermilion
+   accent #B4451C — now dark ink type on warm light paper.
    Craft: hairline rules, tabular numerals, shadows over glow,
    one continuous animation (the hot-metal comet).
    ============================================================ */
 
 :root{
-  --bg:#141210;            /* warm ink ground — bone, inverted */
-  --panel:#1E1913;         /* panel wells */
-  --panel2:#191510;        /* deeper well (stage) */
-  --ink:#F2EAD9;           /* unbleached paper */
-  --muted:#A89C8C;         /* warm-grey secondary */
-  --faint:#6B6154;         /* micro-label grey */
-  --line:#3A322A;          /* hairlines under tungsten */
-  --line-soft:#2A241D;
+  --bg:#F0EEE6;            /* warm bone ground — the waitlist paper */
+  --panel:#FAF8F2;         /* panel wells */
+  --panel2:#FFFEF9;        /* raised faces (stage, nodes, inputs) */
+  --ink:#1B1A15;           /* primary ink */
+  --muted:#4A473D;         /* warm-grey secondary */
+  --faint:#6E6A5C;         /* micro-label grey — deepened for legibility on bone */
+  --line:#DFDBCF;          /* hairlines on bone */
+  --line-soft:#EAE7DD;
   --accent:#B4451C;        /* vermilion — THE brand accent (fills, edges) */
-  --accent-lt:#DF8757;     /* vermilion tint — data/text on dark (waitlist --accent-lt) */
-  --accent-hot:#F0A075;    /* comet head / selected titles */
-  --green:#7FB069;         /* moss signal — healthy / complete */
-  --red:#E05252;           /* cold red — failures only (never confusable with vermilion) */
-  --violet:#7FB5C9;        /* glacier — the one cool counterpoint (paid / revised) */
+  --accent-lt:#DF8757;     /* vermilion tint — for use ON ink/accent fills (waitlist --accent-lt) */
+  --accent-hot:#C8551F;    /* comet head / selected titles — deepened for light */
+  --green:#4E7C3A;         /* moss signal — healthy / complete */
+  --red:#C0392B;           /* cold red — failures only (never confusable with vermilion) */
+  --violet:#2F7A93;        /* glacier — the one cool counterpoint (paid / revised) */
   --serif:"Fraunces","Iowan Old Style",Georgia,serif;
   --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
 }
@@ -31,7 +30,7 @@
 html,body,#root{height:100%;margin:0}
 body{
   background:
-    radial-gradient(1400px 700px at 50% -12%, rgba(202,85,40,.055), transparent 60%),
+    radial-gradient(1400px 700px at 50% -12%, rgba(180,69,28,.05), transparent 60%),
     var(--bg);
   color:var(--ink);
   font-family:var(--mono);
@@ -41,13 +40,13 @@ body{
   text-rendering:optimizeLegibility;
 }
 b{font-weight:600}
-::selection{background:var(--accent);color:#F6EDE2}
+::selection{background:rgba(180,69,28,.18)}
 
 /* warm thin scrollbars */
 *::-webkit-scrollbar{width:8px;height:8px}
 *::-webkit-scrollbar-track{background:transparent}
 *::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
-*::-webkit-scrollbar-thumb:hover{background:#4A4036}
+*::-webkit-scrollbar-thumb:hover{background:#C9C3B2}
 
 /* micro-label stencil: STATUS · QUEUE · BURN RATE */
 .stat span,.badge,.qr-cap,.delta-h,.board-h,.bstat{
@@ -64,7 +63,7 @@ b{font-weight:600}
   display:flex;align-items:center;justify-content:space-between;
   padding:0 36px;height:76px;flex:0 0 auto;
   border-bottom:1px solid var(--line);
-  background:linear-gradient(180deg, rgba(202,85,40,.03), transparent);
+  background:linear-gradient(180deg, rgba(180,69,28,.04), transparent);
 }
 .wordmark{
   font-family:var(--serif);
@@ -125,9 +124,9 @@ b{font-weight:600}
   color:var(--muted);
   background:var(--panel);
 }
-.badge.s-working{color:var(--accent-lt);border-color:rgba(202,85,40,.55);background:rgba(202,85,40,.07)}
-.badge.s-delivered{color:var(--green);border-color:rgba(127,176,105,.5);background:rgba(127,176,105,.07)}
-.badge.s-paid{color:var(--violet);border-color:rgba(127,181,201,.5);background:rgba(127,181,201,.07)}
+.badge.s-working{color:var(--accent);border-color:rgba(180,69,28,.5);background:rgba(180,69,28,.08)}
+.badge.s-delivered{color:var(--green);border-color:rgba(78,124,58,.45);background:rgba(78,124,58,.09)}
+.badge.s-paid{color:var(--violet);border-color:rgba(47,122,147,.45);background:rgba(47,122,147,.09)}
 
 /* --- DAG: molten type being set, cooling into print --- */
 .dag{
@@ -146,7 +145,7 @@ b{font-weight:600}
 .node .ndot{
   display:inline-block;width:8px;height:8px;border-radius:50%;
   margin-bottom:9px;
-  box-shadow:0 0 0 3px rgba(0,0,0,.18);
+  box-shadow:0 0 0 3px rgba(27,26,21,.06);
 }
 .nname{
   font-family:var(--serif);
@@ -166,7 +165,7 @@ b{font-weight:600}
 
 /* completed: outlined settles to solid ink-fill, small paper check */
 .node.done{
-  background:linear-gradient(180deg, rgba(127,176,105,.10), rgba(127,176,105,.02) 70%), var(--panel);
+  background:linear-gradient(180deg, rgba(78,124,58,.12), rgba(78,124,58,.03) 70%), var(--panel);
 }
 .node.done .nname::after{
   content:" ✓";
@@ -180,8 +179,8 @@ b{font-weight:600}
 /* in-flight: the ember breathes… */
 .node.pulse{animation:ember 2.4s ease-in-out infinite}
 @keyframes ember{
-  0%,100%{box-shadow:0 0 0 0 rgba(202,85,40,0), inset 0 0 0 0 rgba(202,85,40,0)}
-  50%{box-shadow:0 0 18px -2px rgba(202,85,40,.22), inset 0 0 24px -12px rgba(202,85,40,.18)}
+  0%,100%{box-shadow:0 0 0 0 rgba(180,69,28,0), inset 0 0 0 0 rgba(180,69,28,0)}
+  50%{box-shadow:0 0 18px -2px rgba(180,69,28,.30), inset 0 0 24px -12px rgba(180,69,28,.16)}
 }
 /* …and the hot-metal comet runs the node's top edge — the ONE
    continuous animation on screen. Bright head, long cooling tail. */
@@ -202,8 +201,8 @@ b{font-weight:600}
 
 /* legacy keyframe kept for compatibility */
 @keyframes pulse{
-  0%,100%{box-shadow:0 0 0 0 rgba(202,85,40,0)}
-  50%{box-shadow:0 0 0 4px rgba(202,85,40,.16)}
+  0%,100%{box-shadow:0 0 0 0 rgba(180,69,28,0)}
+  50%{box-shadow:0 0 0 4px rgba(180,69,28,.18)}
 }
 
 /* --- the wire feed / log tail --- */
@@ -225,7 +224,7 @@ b{font-weight:600}
 @keyframes setline{from{opacity:0;transform:translateY(3px)}}
 .fline b{color:var(--ink);font-weight:600}
 .fline em{
-  color:var(--accent-lt);font-style:normal;
+  color:var(--accent);font-style:normal;
   text-transform:uppercase;font-size:.85em;letter-spacing:.12em;
 }
 .fdot{width:6px;height:6px;border-radius:50%;flex:0 0 auto}
@@ -241,7 +240,7 @@ b{font-weight:600}
   font-size:clamp(96px,12vw,150px);
   line-height:1;
   color:var(--accent);
-  text-shadow:0 0 60px rgba(202,85,40,.25);
+  text-shadow:0 0 60px rgba(180,69,28,.12);
   animation:breathe 4s ease-in-out infinite;
 }
 @keyframes breathe{0%,100%{opacity:.45}50%{opacity:1}}
@@ -283,7 +282,7 @@ b{font-weight:600}
   color:var(--ink);
 }
 .dcell.win b{color:var(--green)}
-.arrow{color:var(--accent-lt);font-size:20px}
+.arrow{color:var(--accent);font-size:20px}
 
 .board{
   background:var(--panel);
@@ -331,7 +330,7 @@ b{font-weight:600}
 }
 .cl-form{display:flex;flex-direction:column;gap:12px}
 .cl textarea,.cl input{
-  background:var(--panel);
+  background:var(--panel2);
   border:1px solid var(--line);
   color:var(--ink);
   border-radius:3px;
@@ -345,7 +344,7 @@ b{font-weight:600}
 .cl textarea:focus,.cl input:focus{
   outline:none;
   border-color:var(--accent);
-  box-shadow:0 0 0 3px rgba(202,85,40,.14);
+  box-shadow:0 0 0 3px rgba(180,69,28,.16);
 }
 .cl-cta{
   background:var(--accent);
@@ -374,7 +373,7 @@ b{font-weight:600}
   font-variant-numeric:tabular-nums;
 }
 .cl-line{animation:setline .25s ease-out both}
-.cl-line b{color:var(--accent-lt);font-weight:600}
+.cl-line b{color:var(--accent);font-weight:600}
 
 /* ---------- Roster (management UI, /?roster) ---------- */
 .role-tools{display:flex;flex-wrap:wrap;gap:8px}
@@ -390,11 +389,11 @@ b{font-weight:600}
   cursor:pointer;user-select:none;
   transition:border-color .15s ease,color .15s ease,background .15s ease;
 }
-.tool-chip:hover{border-color:#4A4036}
+.tool-chip:hover{border-color:#C9C3B2}
 .tool-chip.on{
   color:var(--ink);
-  border-color:rgba(202,85,40,.6);
-  background:rgba(202,85,40,.08);
+  border-color:rgba(180,69,28,.55);
+  background:rgba(180,69,28,.10);
 }
 .tool-chip input{accent-color:var(--accent);margin:0}
 
@@ -431,7 +430,7 @@ b{font-weight:600}
 }
 .role-seed{
   background:none;border:0;
-  color:var(--accent-lt);
+  color:var(--accent);
   font:inherit;cursor:pointer;
   text-decoration:underline;text-underline-offset:3px;
   padding:0;
@@ -452,7 +451,7 @@ b{font-weight:600}
 }
 .autopilot-btn:hover{
   filter:brightness(1.08);
-  box-shadow:0 0 18px -4px rgba(202,85,40,.55);
+  box-shadow:0 14px 28px -16px rgba(180,69,28,.5);
 }
 .autopilot-btn:active{transform:translateY(1px)}
 
@@ -462,29 +461,28 @@ b{font-weight:600}
 }
 
 /* ============================================================
-   REACTOR CORE (amplified) — a VISIBLE animated molten gradient in
-   the stage (pure CSS, works with zero WebGL) + the shader canvas
-   on top for extra richness. Data plane forced above; panels solid.
+   REACTOR CORE (calmed for paper) — the molten gradient becomes
+   a faint warm radial drifting over clean paper (pure CSS) +
+   the shader canvas softened to a whisper of warm mottling.
+   Data plane forced above; panels solid.
    ============================================================ */
 .stage{
   position:relative;
   background:
-    radial-gradient(58% 58% at 15% 8%,  rgba(202,85,40,.22), transparent 60%),
-    radial-gradient(52% 52% at 90% 20%, rgba(154,60,24,.22), transparent 60%),
-    radial-gradient(80% 80% at 55% 112%, rgba(106,42,16,.36), transparent 66%),
+    radial-gradient(90% 90% at 50% -12%, rgba(180,69,28,.05), transparent 62%),
     var(--panel2);
   background-size:200% 200%;
   animation:reactor 22s ease-in-out infinite;
 }
 @keyframes reactor{
-  0%,100%{background-position:0% 8%, 100% 0%, 50% 100%}
-  50%    {background-position:34% 28%, 66% 40%, 44% 82%}
+  0%,100%{background-position:50% 0%}
+  50%    {background-position:42% 14%}
 }
 #reactor-canvas{
   position:absolute; inset:0; z-index:0; width:100%; height:100%;
-  pointer-events:none; opacity:.45; mix-blend-mode:screen;
-  --gradient-color-1:#1b1410; --gradient-color-2:#5e2812;
-  --gradient-color-3:#C9542A; --gradient-color-4:#221610;
+  pointer-events:none; opacity:.30; mix-blend-mode:multiply;
+  --gradient-color-1:#FFFEF9; --gradient-color-2:#F4E7D8;
+  --gradient-color-3:#EFD3BE; --gradient-color-4:#FAF5EA;
 }
 .stage>.job-title,.stage>.dag,.stage>.feed,.stage>.idle{position:relative;z-index:1}
 @media (prefers-reduced-motion:reduce){#reactor-canvas{display:none}.stage{animation:none}}
@@ -525,17 +523,17 @@ b{font-weight:600}
   color:var(--muted);
 }
 .rid{ color:var(--ink); letter-spacing:.14em; }
-.rdur{ color:var(--accent-lt); }
+.rdur{ color:var(--accent); }
 .rsep{ color:var(--faint); }
 .commission{
   margin-left:auto;
   background:none; border:1px solid var(--line);
-  color:var(--accent-lt);
+  color:var(--accent);
   font:inherit; font-size:11px; letter-spacing:.08em; text-transform:uppercase;
   padding:6px 12px; border-radius:3px; cursor:pointer;
   transition:border-color .18s ease, background .18s ease, color .18s ease;
 }
-.commission:hover{ border-color:rgba(202,85,40,.6); background:rgba(202,85,40,.08); color:var(--accent-hot); }
+.commission:hover{ border-color:rgba(180,69,28,.5); background:rgba(180,69,28,.10); color:var(--accent-hot); }
 .badge{ white-space:nowrap; }
 
 /* ---------- DAG node: keep hot-metal; add glyph + stagger reveal ---------- */
@@ -573,7 +571,7 @@ b{font-weight:600}
   padding:8px 16px; border-radius:3px; cursor:pointer; margin-top:4px;
   transition:border-color .18s ease, color .18s ease, box-shadow .2s ease;
 }
-.idle-hint:hover{ border-color:rgba(202,85,40,.55); color:var(--accent-lt); box-shadow:0 0 18px -6px rgba(202,85,40,.5); }
+.idle-hint:hover{ border-color:rgba(180,69,28,.5); color:var(--accent); box-shadow:0 10px 22px -16px rgba(180,69,28,.45); }
 
 /* ---------- right rail: the live queue (replaces the static board) ---------- */
 .queue{
@@ -614,10 +612,10 @@ b{font-weight:600}
 }
 @keyframes rowIn{ from{ opacity:0; transform:translateY(-4px); } }
 .qrow:last-child{ border-bottom:0; }
-.qrow:hover{ background:rgba(202,85,40,.06); }
-.qrow:focus-visible{ outline:2px solid var(--accent-lt); outline-offset:-2px; }
+.qrow:hover{ background:rgba(180,69,28,.08); }
+.qrow:focus-visible{ outline:2px solid var(--accent); outline-offset:-2px; }
 .qrow.sel{
-  background:rgba(202,85,40,.12);
+  background:rgba(180,69,28,.14);
   border-left-color:var(--accent);
 }
 .qglyph{
@@ -631,7 +629,7 @@ b{font-weight:600}
   font-size:14px; line-height:1.25; color:var(--ink);
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%;
 }
-.qrow.sel .qbrief{ color:var(--accent-hot); }
+.qrow.sel .qbrief{ color:var(--accent); }
 .qsub{
   display:flex; align-items:center; gap:7px;
   font-family:var(--mono); font-size:10px; letter-spacing:.06em;
@@ -652,7 +650,7 @@ b{font-weight:600}
   display:flex; align-items:center; gap:12px;
   padding:0 36px;
   border-top:1px solid var(--line);
-  background:linear-gradient(0deg, rgba(202,85,40,.03), transparent);
+  background:linear-gradient(0deg, rgba(180,69,28,.04), transparent);
   font-family:var(--mono); font-size:11px; letter-spacing:.06em;
   font-variant-numeric:tabular-nums;
   color:var(--muted);
@@ -663,12 +661,12 @@ b{font-weight:600}
 .mc-foot .fh{
   width:7px; height:7px; border-radius:50%; flex:0 0 auto;
   background:var(--accent);
-  box-shadow:0 0 0 0 rgba(202,85,40,.5);
+  box-shadow:0 0 0 0 rgba(180,69,28,.5);
   animation:heart 1.8s ease-in-out infinite;
 }
 @keyframes heart{
-  0%,100%{ box-shadow:0 0 0 0 rgba(202,85,40,.45); opacity:.85; }
-  50%{ box-shadow:0 0 0 5px rgba(202,85,40,0); opacity:1; }
+  0%,100%{ box-shadow:0 0 0 0 rgba(180,69,28,.45); opacity:.85; }
+  50%{ box-shadow:0 0 0 5px rgba(180,69,28,0); opacity:1; }
 }
 
 /* ---------- reduced motion: instant swaps ---------- */
@@ -680,7 +678,7 @@ b{font-weight:600}
 .delivery{
   display:flex; align-items:center; gap:14px; flex-wrap:wrap;
   margin:0 0 16px; padding:11px 14px;
-  background:linear-gradient(90deg, rgba(127,176,105,.10), rgba(127,176,105,0) 70%);
+  background:linear-gradient(90deg, rgba(78,124,58,.10), rgba(78,124,58,0) 70%);
   border:1px solid var(--line); border-left:3px solid var(--green);
 }
 .open-site{
@@ -692,7 +690,7 @@ b{font-weight:600}
 .open-site:focus-visible{ outline:2px solid var(--accent-hot); outline-offset:2px; }
 .dlv-url{ font:12px/1.3 var(--mono); color:var(--muted); word-break:break-all; }
 .ad-player{ display:inline-flex; align-items:center; gap:9px; margin-left:auto; }
-.ad-label{ font:600 10px/1 var(--mono); letter-spacing:.14em; text-transform:uppercase; color:var(--accent-lt); white-space:nowrap; }
+.ad-label{ font:600 10px/1 var(--mono); letter-spacing:.14em; text-transform:uppercase; color:var(--accent); white-space:nowrap; }
 .ad-player audio{ height:34px; }
 @media (max-width:900px){ .ad-player{ margin-left:0; } }
 
@@ -700,7 +698,7 @@ b{font-weight:600}
 .qopen{
   flex:0 0 auto; align-self:center; margin-left:6px;
   width:24px; height:24px; display:grid; place-items:center;
-  color:var(--accent-lt); font-size:13px; line-height:1;
+  color:var(--accent); font-size:13px; line-height:1;
   border:1px solid var(--line); border-radius:3px; background:transparent;
   cursor:pointer; transition:background .15s, color .15s;
 }
@@ -717,7 +715,7 @@ b{font-weight:600}
 /* client phone page: error + "hear your radio ad" */
 .cl-err{ margin-top:10px; color:var(--red); font:12px/1.4 var(--mono); }
 .cl-voice{ margin-top:18px; padding-top:16px; border-top:1px solid var(--line); }
-.cl-voice-h{ font:600 11px/1 var(--mono); letter-spacing:.14em; text-transform:uppercase; color:var(--accent-lt); margin-bottom:10px; }
+.cl-voice-h{ font:600 11px/1 var(--mono); letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin-bottom:10px; }
 .cl-voice audio{ width:100%; max-width:420px; }
 
 /* ============================================================
@@ -729,7 +727,7 @@ b{font-weight:600}
    shadows not glow-spam). Appended last: equal specificity wins.
    ============================================================ */
 
-/* shared soft radius on raised faces (waitlist --r-s, scaled to the dark board) */
+/* shared soft radius on raised faces (waitlist --r-s, on the paper board) */
 .node,.qr,.open-site,.commission,.idle-hint,.badge,.autopilot-btn,.qopen,
 .cl textarea,.cl input,.cl-cta,.cl-feed,.roster{ border-radius:6px; }
 
@@ -743,10 +741,10 @@ button.node{
 }
 .node{ transition:border-color .3s ease, background .4s ease, box-shadow .25s ease, transform .18s ease; }
 .node:hover{
-  box-shadow:0 12px 26px -18px rgba(0,0,0,.85);
+  box-shadow:0 1px 0 rgba(27,26,21,.03), 0 18px 36px -26px rgba(27,26,21,.28);
   transform:translateY(-1px);
 }
-.node:focus-visible{ outline:2px solid var(--accent-lt); outline-offset:2px; }
+.node:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
 .nname,.nmodel,.nlast,.nstream{ display:block; }
 
 /* event counter — signals "there is a log in here" without shouting */
@@ -772,14 +770,14 @@ button.node{
   grid-column:span 2;
   padding:15px 17px 13px;
   border-left-width:3px;
-  background:linear-gradient(180deg, rgba(202,85,40,.10), rgba(202,85,40,.02) 62%), var(--panel);
+  background:linear-gradient(180deg, rgba(180,69,28,.10), rgba(180,69,28,.02) 62%), var(--panel);
 }
 .node.live .nname{ font-size:clamp(17px,1.5vw,24px); }
 .node.live .nname::after{
   content:" · live";
   font-family:var(--mono); font-size:.42em; font-weight:500;
   letter-spacing:.22em; text-transform:uppercase;
-  color:var(--accent-lt); vertical-align:4px;
+  color:var(--accent); vertical-align:4px;
 }
 .nstream{
   margin-top:10px; padding-top:8px;
@@ -798,7 +796,7 @@ button.node{
 .nsline.now .nsnote::after{
   content:""; display:inline-block;
   width:7px; height:12px; margin-left:7px; vertical-align:-1px;
-  background:var(--accent-lt);
+  background:var(--accent);
   animation:blink 1.1s steps(1) infinite;
 }
 @keyframes blink{ 0%,55%{opacity:1} 56%,100%{opacity:0} }
@@ -810,15 +808,15 @@ button.fline{
   text-align:left; font:inherit; color:var(--muted);
   line-height:2.05; cursor:pointer;
 }
-button.fline:hover b{ color:var(--accent-lt); }
-button.fline:focus-visible{ outline:2px solid var(--accent-lt); outline-offset:-2px; border-radius:3px; }
+button.fline:hover b{ color:var(--accent); }
+button.fline:focus-visible{ outline:2px solid var(--accent); outline-offset:-2px; border-radius:3px; }
 .fline .fnote{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .fline.fempty{ cursor:default; }
 
 /* ---------- the agent-log drawer: full replay of one agent's work ---------- */
 .drawer-wrap{
   position:fixed; inset:0; z-index:60;
-  background:rgba(10,8,6,.55);
+  background:rgba(27,26,21,.38);
   display:flex; justify-content:flex-end;
   animation:scrimIn .18s ease both;
 }
@@ -827,7 +825,7 @@ button.fline:focus-visible{ outline:2px solid var(--accent-lt); outline-offset:-
   width:min(480px,100%); height:100%;
   background:var(--panel);
   border-left:1px solid var(--line);
-  box-shadow:-40px 0 80px -40px rgba(0,0,0,.8);
+  box-shadow:-40px 0 80px -48px rgba(27,26,21,.30);
   display:flex; flex-direction:column; min-height:0;
   animation:drawerIn .26s cubic-bezier(.22,.68,.3,1) both;
 }
@@ -841,7 +839,7 @@ button.fline:focus-visible{ outline:2px solid var(--accent-lt); outline-offset:-
   display:block;
   font-family:var(--mono); font-size:10px; font-weight:500;
   letter-spacing:.2em; text-transform:uppercase;
-  color:var(--accent-lt); margin-bottom:8px;
+  color:var(--accent); margin-bottom:8px;
 }
 .drawer-title{
   font-family:var(--serif); font-optical-sizing:auto; font-weight:600;
@@ -862,7 +860,7 @@ button.fline:focus-visible{ outline:2px solid var(--accent-lt); outline-offset:-
   transition:border-color .18s ease, color .18s ease;
 }
 .drawer-x:hover{ border-color:var(--accent); color:var(--ink); }
-.drawer-x:focus-visible{ outline:2px solid var(--accent-lt); outline-offset:2px; }
+.drawer-x:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
 .drawer-stats{
   display:flex; flex-wrap:wrap; gap:26px;
   padding:14px 24px;
@@ -911,7 +909,7 @@ button.fline:focus-visible{ outline:2px solid var(--accent-lt); outline-offset:-
 }
 .dnote .dcaret{
   display:inline-block; width:7px; height:12px; margin-left:7px; vertical-align:-1px;
-  background:var(--accent-lt);
+  background:var(--accent);
   animation:blink 1.1s steps(1) infinite;
 }
 

@@ -7,20 +7,20 @@ const NODES = ['intake','research','naming','review','copy','engineer','publish'
 const LABEL = { intake:'Intake', research:'Research', naming:'Naming', review:'Review', copy:'Copy', engineer:'Engineer', publish:'Publish', voice:'Voice', invoice:'Invoice', qa:'QA', learn:'Learn', deliver:'Deliver' }
 const NODE_MODEL = { research:'Linkup', engineer:'GPT-5.6 Sol', voice:'ElevenLabs', invoice:'Dodo' }
 // vermilion tint = in flight · moss = done · cold red = failure · glacier = revision
-const COLORS = { done:'#7FB069', started:'#DF8757', working:'#DF8757', failed:'#E05252', rejected:'#E05252', revised:'#7FB5C9' }
+const COLORS = { done:'#4E7C3A', started:'#B4451C', working:'#B4451C', failed:'#C0392B', rejected:'#C0392B', revised:'#2F7A93' }
 // status is NEVER color-alone: every status carries a glyph + a text label too
 const NGLYPH = { done:'✓', started:'▲', working:'▲', failed:'✕', rejected:'✕', revised:'↺' }
 const JOB = {
-  working:  { c:'var(--accent-lt)', g:'▲', label:'WORKING' },
+  working:  { c:'var(--accent)',    g:'▲', label:'WORKING' },
   queued:   { c:'var(--faint)',     g:'○', label:'QUEUED' },
-  invoiced: { c:'var(--accent-lt)', g:'$', label:'INVOICED' },   // real status: checkout created, awaiting pay
+  invoiced: { c:'var(--accent)',    g:'$', label:'INVOICED' },   // real status: checkout created, awaiting pay
   delivered:{ c:'var(--green)',     g:'✓', label:'DELIVERED' },
   paid:     { c:'var(--violet)',    g:'◆', label:'PAID' },
   stuck:    { c:'var(--red)',       g:'✕', label:'STUCK' },      // real failure state — must read as alarm, not idle
   failed:   { c:'var(--red)',       g:'✕', label:'FAILED' },
 }
 const jobMeta = (s) => JOB[s] || { c:'var(--faint)', g:'·', label:(s || 'unknown').toUpperCase() }
-const col = (s) => COLORS[s] || '#3A322A'
+const col = (s) => COLORS[s] || '#DFDBCF'
 const money = (n) => (n == null ? '—' : '$' + Number(n).toFixed(2))
 const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s)
 
@@ -195,11 +195,11 @@ export default function MissionControl() {
 
   useEffect(() => {
     let alive = true
-    QRCode.toDataURL(clientUrl, { margin: 2, width: 380, color: { dark: '#f2ead9', light: '#1e1913' } })
+    QRCode.toDataURL(clientUrl, { margin: 2, width: 380, color: { dark: '#1B1A15', light: '#F0EEE6' } })
       .then((url) => { if (alive) setQrSrc(url) })
       // Only reach for the external QR service if LOCAL generation actually fails — the happy
       // path never touches the network (that was the whole point of bundling qrcode).
-      .catch(() => { if (alive) setQrSrc('https://api.qrserver.com/v1/create-qr-code/?size=380x380&margin=8&bgcolor=1e1913&color=f2ead9&data=' + encodeURIComponent(clientUrl)) })
+      .catch(() => { if (alive) setQrSrc('https://api.qrserver.com/v1/create-qr-code/?size=380x380&margin=8&bgcolor=F0EEE6&color=1B1A15&data=' + encodeURIComponent(clientUrl)) })
     return () => { alive = false }
   }, [clientUrl])
 
@@ -336,7 +336,7 @@ export default function MissionControl() {
                   <div className="fline fempty">awaiting first event on this run…</div>
                 )}
                 {feed.map((e, i) => (
-                  <button key={e._id} type="button" className="fline" style={{ opacity: 1 - i * 0.11 }}
+                  <button key={e._id} type="button" className="fline" style={{ opacity: Math.max(0.5, 1 - i * 0.09) }}
                     onClick={() => setOpenNode(e.node)} title={'Open the ' + (LABEL[e.node] || e.node) + ' agent log'}>
                     <span className="fdot" style={{ background: col(e.status) }} />
                     <b>{LABEL[e.node] || e.node}</b> <em>{e.status}</em> <span className="fnote">{e.note}</span>
@@ -472,7 +472,7 @@ export default function MissionControl() {
               ))}
               {openNode === liveNode && openEvents.length > 0 && (
                 <li className="devent">
-                  <span className="dglyph" style={{ color: 'var(--accent-lt)' }}>▲</span>
+                  <span className="dglyph" style={{ color: 'var(--accent)' }}>▲</span>
                   <span className="dbody">
                     <span className="dnote">working<span className="dcaret" aria-hidden="true" /></span>
                   </span>
