@@ -9,5 +9,42 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <!-- Reactor Core: molten shader glow behind the DAG (stripe-gradient, MIT, ~12KB, degrade-safe) -->
+    <script src="https://cdn.jsdelivr.net/npm/stripe-gradient@1.0.1/dist/main.js"></script>
+    <script>
+    (function () {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var canvas = null, gradient = null, dead = false;
+      function ensure(stage) {
+        if (dead) return;
+        if (!canvas) {
+          canvas = document.createElement('canvas');
+          canvas.id = 'reactor-canvas';
+          canvas.setAttribute('data-transition-in', '');
+        }
+        if (canvas.parentNode !== stage) stage.insertBefore(canvas, stage.firstChild);
+        if (gradient) return;
+        var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (!gl || !window.Gradient) { canvas.style.display = 'none'; dead = true; return; }
+        try {
+          gradient = new Gradient();
+          gradient.initGradient('#reactor-canvas');
+          document.addEventListener('visibilitychange', function () {
+            if (gradient && gradient.pause && gradient.play)
+              document.hidden ? gradient.pause() : gradient.play();
+          });
+        } catch (e) { canvas.style.display = 'none'; dead = true; }
+      }
+      var iv = setInterval(function () {
+        var stage = document.querySelector('.stage');
+        if (!stage) return;
+        clearInterval(iv);
+        ensure(stage);
+        new MutationObserver(function () {
+          if (!stage.querySelector('#reactor-canvas')) ensure(stage);
+        }).observe(stage, { childList: true });
+      }, 120);
+    })();
+    </script>
   </body>
 </html>
