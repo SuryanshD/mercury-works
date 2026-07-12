@@ -76,8 +76,6 @@ Eleven briefs in, eleven brands out. Each screenshot links to the **live** site 
   </tr>
 </table>
 
-<sub>Watch it work live: <a href="https://mercury-mission-control.pages.dev">Mission Control</a> (the big-screen board) · <a href="https://mercury-mission-control.pages.dev/?client">brief page</a> · <a href="https://mercury-mission-control.pages.dev/?roster">org roster</a></sub>
-
 ## How it works
 
 **1 — You write one sentence.** Scan a QR, type a brief — *“a cold-brew coffee for developers who code at night.”* That's the last thing a human does.
@@ -87,6 +85,30 @@ Eleven briefs in, eleven brands out. Each screenshot links to the **live** site 
 **3 — A real brand goes live.** Name + tagline (it catches naming clashes and revises), a bespoke landing page (never a template), a generated hero photo, a 30-second radio ad, and a working **Dodo Payments** checkout — deployed to a real `*.pages.dev` URL. Then the agency **writes itself a skill** so the next brief in that vertical ships faster.
 
 It runs **on the [Hermes](https://github.com/NousResearch/hermes) agent** — the product *is* an agent run. Each brief is one `hermes -z` session executing the [`launch-kit` skill](hermes/skills/agency/launch-kit/SKILL.md) with real tools, reporting every stage to Convex, which is what the live board renders. It's a **managed, emergent org**, fully **observable** (a Langfuse trace per run), with a **closed learning loop** (a measured job-2-beats-job-1 delta).
+
+## The control room
+
+Everything above is what the machine ships. This is the machine — **you scan, it ships**, and you get to watch the org think while it works.
+
+<a href="https://mercury-mission-control.pages.dev">
+  <img src="assets/product/mission-control.png" alt="Mission Control — the live board: pipeline DAG of a run in flight, commission QR, job queue, and learning delta" width="100%">
+</a>
+<p align="center"><sub><b>Mission Control</b> — a run in flight: the DAG animates stage by stage, the queue holds the next brief, and the learning panel proves job 2 beat job 1. The QR in the corner is a real commission button. Put it on the biggest screen you own.</sub></p>
+
+<table>
+  <tr>
+    <td align="center" width="25%" valign="top">
+      <a href="https://mercury-mission-control.pages.dev/?client"><img src="assets/product/client.png" alt="The client brief page on a phone — What should we launch for you?" width="100%"></a><br>
+      <sub><b>The brief page</b> — scan the QR, type one sentence, tap <i>Commission the agency</i>. That's your whole job.</sub>
+    </td>
+    <td align="center" width="75%" valign="top">
+      <a href="https://mw-waitlist.pages.dev"><img src="assets/product/waitlist.png" alt="The waitlist page — Brief it. Watch a whole agency ship your brand — with a live animated org chart" width="100%"></a><br>
+      <sub><b>The waitlist</b> — <i>“Brief it. Watch a whole agency ship your brand.”</i> Underneath, the org chart is alive: a Managing Director and six specialists staffing up while you read the headline.</sub>
+    </td>
+  </tr>
+</table>
+
+<sub>There's also an <a href="https://mercury-mission-control.pages.dev/?roster">org roster</a> — where a non-engineer defines a new agent role (mission, allowed tools, guardrails) with no code.</sub>
 
 ## Run it yourself
 
