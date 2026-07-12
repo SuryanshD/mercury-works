@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mercury Works — the autonomous creative agency</title>
+<meta name="description" content="Give it a one-line brief. A Managing Director agent staffs a swarm of specialists and ships a live launch kit in minutes. Join the waitlist.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0D13; --bg2:#070910; --panel:#11151E; --panel2:#141926; --line:#1F2634;
+    --ink:#EAEEF5; --muted:#8A93A6; --dim:#5C6675;
+    --accent:#F5A623; --hot:#FF7A45; --ok:#3DD68C; --cool:#5AA9FF;
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;background:radial-gradient(1200px 700px at 78% 18%, #17110A 0%, var(--bg) 42%, var(--bg2) 100%);
+       color:var(--ink);font-family:"Space Grotesk",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow:hidden}
+  a{color:inherit}
+  .mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+  .glyph{color:var(--accent)}
+
+  header{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;gap:14px;
+         padding:20px 30px;z-index:10}
+  .wordmark{font-weight:700;letter-spacing:.14em;font-size:14px}
+  .status{font-size:11px;color:var(--ok);letter-spacing:.12em;display:flex;align-items:center;gap:7px}
+  .status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);animation:blink 2.4s ease-in-out infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+
+  .stage{height:100%;display:grid;grid-template-columns:minmax(360px,42%) 1fr;align-items:center;gap:20px;
+         padding:70px 40px 30px}
+
+  /* ── LEFT: signup ── */
+  .signup{max-width:460px;margin-left:20px}
+  .kicker{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:0 0 14px}
+  .signup h1{font-size:clamp(30px,4vw,46px);line-height:1.04;margin:0 0 16px;letter-spacing:-.02em}
+  .signup p.lead{color:var(--muted);font-size:16px;line-height:1.55;margin:0 0 26px}
+  form{display:flex;flex-direction:column;gap:12px}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  input[type=email]{flex:1;min-width:200px;background:#0B0F17;border:1px solid var(--line);color:var(--ink);
+        border-radius:12px;padding:15px 16px;font-size:15px;font-family:inherit;outline:none;transition:border-color .2s,box-shadow .2s}
+  input[type=email]:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(245,166,35,.15)}
+  button{background:var(--accent);color:#140d02;font-weight:700;border:0;border-radius:12px;padding:15px 24px;
+         font-size:15px;font-family:inherit;cursor:pointer;white-space:nowrap;transition:transform .12s,filter .2s}
+  button:hover{filter:brightness(1.06)} button:active{transform:translateY(1px)}
+  .fine{font-size:12px;color:var(--dim);margin:2px 2px 0}
+  .count{margin-top:22px;font-family:"JetBrains Mono",monospace;font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:9px}
+  .dots{display:flex} .dots i{width:20px;height:20px;border-radius:50%;margin-left:-7px;border:2px solid var(--bg);
+        background:linear-gradient(135deg,var(--accent),var(--hot))}
+  .dots i:nth-child(2){background:linear-gradient(135deg,var(--cool),#7d6bff)}
+  .dots i:nth-child(3){background:linear-gradient(135deg,var(--ok),#2fa8ff)}
+  .ok-state{display:none;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}
+  .ok-state h2{margin:0 0 6px;font-size:20px} .ok-state p{margin:0;color:var(--muted);font-size:14px}
+  .ok-state .glyph{font-size:22px}
+  body.done form{display:none} body.done .count{display:none} body.done .ok-state{display:block}
+
+  /* ── RIGHT: product + animation ── */
+  .showcase{position:relative;height:100%;display:flex;flex-direction:column;justify-content:center;padding-right:30px}
+  .showcase h2{font-size:clamp(22px,2.6vw,30px);margin:0 0 8px;letter-spacing:-.01em}
+  .showcase .desc{color:var(--muted);max-width:520px;font-size:15px;line-height:1.55;margin:0 0 4px}
+
+  .reactor{position:relative;margin:6px 0;height:min(46vh,420px)}
+  .reactor svg{width:100%;height:100%;overflow:visible}
+  .glow{position:absolute;inset:0;background:radial-gradient(closest-side, rgba(245,166,35,.16), rgba(255,122,69,.05) 45%, transparent 70%);
+        filter:blur(8px);animation:breathe 5s ease-in-out infinite;pointer-events:none}
+  @keyframes breathe{0%,100%{transform:scale(.9);opacity:.7}50%{transform:scale(1.05);opacity:1}}
+
+  .node rect{fill:var(--panel2);stroke:var(--line);stroke-width:1.5;rx:11}
+  .node text{fill:var(--ink);font-family:"Space Grotesk";font-weight:600;font-size:13px}
+  .node .task{fill:var(--dim);font-family:"JetBrains Mono";font-weight:400;font-size:9.5px}
+  .agent{opacity:0;transform:translateY(10px) scale(.9);transform-box:fill-box;transform-origin:center;
+         transition:opacity .5s ease, transform .5s cubic-bezier(.2,.8,.2,1)}
+  .agent.show{opacity:1;transform:translateY(0) scale(1)}
+  .agent.active rect{stroke:var(--accent);filter:drop-shadow(0 0 8px rgba(245,166,35,.5))}
+  .agent.done rect{stroke:var(--ok)}
+  .agent.done .dot{fill:var(--ok)} .agent .dot{fill:var(--dim);transition:fill .3s}
+  .agent.active .dot{fill:var(--accent)}
+  .md rect{fill:#1a130a;stroke:var(--accent);stroke-width:1.8}
+  .md.pulse rect{animation:mdpulse 1.1s ease-in-out infinite}
+  @keyframes mdpulse{0%,100%{filter:drop-shadow(0 0 4px rgba(245,166,35,.4))}50%{filter:drop-shadow(0 0 16px rgba(245,166,35,.85))}}
+  .md .g{fill:var(--accent);font-size:15px;font-family:"Space Grotesk";font-weight:700}
+  .edge{stroke:var(--line);stroke-width:1.5;fill:none;stroke-dasharray:220;stroke-dashoffset:220;transition:stroke-dashoffset .55s ease, stroke .3s}
+  .edge.draw{stroke-dashoffset:0} .edge.live{stroke:var(--accent);opacity:.9} .edge.done{stroke:var(--ok);opacity:.5}
+
+  .brief{position:absolute;left:2%;top:2%;max-width:56%;background:var(--panel);border:1px solid var(--line);
+         border-left:3px solid var(--accent);border-radius:10px;padding:10px 13px;font-size:12.5px;color:var(--ink);
+         font-family:"JetBrains Mono";opacity:0;transform:translateY(-6px);transition:opacity .4s,transform .4s;z-index:3}
+  .brief.show{opacity:1;transform:translateY(0)} .brief b{color:var(--accent);font-weight:500}
+  .result{position:absolute;right:2%;bottom:1%;background:linear-gradient(135deg, rgba(61,214,140,.14), rgba(90,169,255,.08));
+          border:1px solid rgba(61,214,140,.4);border-radius:10px;padding:10px 14px;font-size:12.5px;
+          font-family:"JetBrains Mono";color:var(--ok);opacity:0;transform:translateY(8px) scale(.96);
+          transition:opacity .5s,transform .5s;z-index:3}
+  .result.show{opacity:1;transform:translateY(0) scale(1)}
+
+  .ships{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;max-width:560px}
+  .ships span{font-family:"JetBrains Mono";font-size:11px;color:var(--muted);border:1px solid var(--line);
+        border-radius:999px;padding:6px 11px;background:rgba(255,255,255,.015)}
+  .ships span b{color:var(--accent);font-weight:500}
+
+  footer{position:fixed;bottom:0;left:0;right:0;text-align:center;padding:12px;font-size:11px;color:var(--dim);
+         font-family:"JetBrains Mono"}
+
+  @media (max-width:880px){
+    body{overflow:auto}
+    .stage{grid-template-columns:1fr;height:auto;min-height:100%;padding:80px 22px 60px;gap:34px}
+    .signup{margin:0;max-width:none}
+    .reactor{height:340px}
+    .showcase{padding:0}
+  }
+</style>
+</head>
+<body>
+<header>
+  <span class="wordmark"><span class="glyph">☿</span> MERCURY WORKS</span>
+  <span class="status mono">AGENCY IS OPEN</span>
+</header>
+
+<main class="stage">
+  <!-- LEFT — signup (frictionless, on top for mobile) -->
+  <section class="signup">
+    <p class="kicker">Early access · waitlist</p>
+    <h1>Brief it.<br>Watch a whole agency <span class="glyph">ship your brand.</span></h1>
+    <p class="lead">Be first to commission Mercury Works — the autonomous creative agency where AI agents research, name, design, and publish a live launch kit in minutes.</p>
+    <form id="wl">
+      <div class="row">
+        <input id="email" type="email" required placeholder="you@email.com" autocomplete="email" autofocus>
+        <button type="submit">Join the waitlist</button>
+      </div>
+      <p class="fine">We'll only email you about Mercury Works early access. No spam.</p>
+    </form>
+    <div class="count mono"><span class="dots"><i></i><i></i><i></i></span> builders are already in line</div>
+    <div class="ok-state">
+      <h2><span class="glyph">☿</span> You're on the list.</h2>
+      <p>The agency will reach out when your seat opens. Watch the swarm work →</p>
+    </div>
+  </section>
+
+  <!-- RIGHT — product + animation -->
+  <section class="showcase">
+    <h2>The autonomous creative agency.</h2>
+    <p class="desc">One Managing Director agent staffs a swarm of specialists, delegates the work, reviews it, and ships a live, deployed launch kit — while you watch the org think.</p>
+
+    <div class="reactor">
+      <div class="glow"></div>
+      <div class="brief" id="brief">Brief: <b id="briefText">a subscription box for rare houseplants</b></div>
+      <div class="result" id="result">◆ launch kit shipped — live at <span id="resultUrl">verdebox.pages.dev</span></div>
+      <svg viewBox="0 0 640 420" preserveAspectRatio="xMidYMid meet" id="svg">
+        <!-- edges MD(320,96) -> agents -->
+        <g id="edges" stroke-linecap="round"></g>
+        <!-- MD -->
+        <g class="node md" id="md">
+          <rect x="250" y="60" width="140" height="46" rx="12"></rect>
+          <text x="320" y="80" text-anchor="middle"><tspan class="g">☿</tspan> Managing Dir.</text>
+          <text x="320" y="97" text-anchor="middle" class="task">staffing the org…</text>
+        </g>
+        <g id="agents"></g>
+      </svg>
+    </div>
+
+    <div class="ships">
+      <span><b>◆</b> Brand name + tagline</span>
+      <span><b>◆</b> Cited market brief</span>
+      <span><b>◆</b> Live landing site</span>
+      <span><b>◆</b> Logo</span>
+      <span><b>◆</b> 30-sec voice ad</span>
+      <span><b>◆</b> Checkout link</span>
+    </div>
+  </section>
+</main>
+
+<footer class="mono">Mercury Works · an autonomous agency running on Hermes</footer>
+
+<script>
+  // ── real signup → canonical Convex /lead (CORS-enabled) ──
+  var LEAD_ENDPOINT = "https://reminiscent-albatross-33.convex.site/lead";
+  document.getElementById('wl').addEventListener('submit', function(e){
+    e.preventDefault();
+    var email = document.getElementById('email').value.trim();
+    if(!email) return;
+    try{
+      fetch(LEAD_ENDPOINT, {method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({email: email, sourceUrl: location.href, consent: true})}).catch(function(){});
+    }catch(_){}
+    document.body.classList.add('done');
+  });
+
+  // ── the "MD staffs the swarm" auto-loop ──
+  var AGENTS = [
+    {r:"Researcher",  t:"cited market scan", x:70,  y:210},
+    {r:"Namer",       t:"3 names + taglines",x:250, y:210},
+    {r:"Copywriter",  t:"landing copy",      x:430, y:210},
+    {r:"Designer",    t:"logo + palette",    x:70,  y:320},
+    {r:"Publisher",   t:"deploy live site",  x:250, y:320},
+    {r:"QA",          t:"verify 200",        x:430, y:320},
+  ];
+  var BRIEFS = [
+    ["a subscription box for rare houseplants","verdebox.pages.dev"],
+    ["an AI notetaker for therapists","noted-care.pages.dev"],
+    ["a small-batch oat milk brand","oathaus.pages.dev"],
+    ["a running club for night owls","nocturne-run.pages.dev"],
+  ];
+  var SVGNS="http://www.w3.org/2000/svg";
+  var edges=document.getElementById('edges'), agentsG=document.getElementById('agents');
+  var MDx=320, MDy=106;
+  AGENTS.forEach(function(a,i){
+    // edge
+    var p=document.createElementNS(SVGNS,'path');
+    var cx=a.x+100, cy=a.y; // agent top-center (rect width 200 later? we use 120) -> center
+    p.setAttribute('d','M'+MDx+' '+MDy+' C '+MDx+' '+(MDy+40)+', '+(a.x+60)+' '+(a.y-40)+', '+(a.x+60)+' '+a.y);
+    p.setAttribute('class','edge'); p.id='edge'+i; edges.appendChild(p);
+    // node
+    var g=document.createElementNS(SVGNS,'g'); g.setAttribute('class','node agent'); g.id='agent'+i;
+    g.innerHTML='<rect x="'+a.x+'" y="'+a.y+'" width="120" height="44" rx="11"></rect>'+
+      '<circle class="dot" cx="'+(a.x+13)+'" cy="'+(a.y+16)+'" r="4"></circle>'+
+      '<text x="'+(a.x+26)+'" y="'+(a.y+19)+'">'+a.r+'</text>'+
+      '<text x="'+(a.x+12)+'" y="'+(a.y+34)+'" class="task">'+a.t+'</text>';
+    agentsG.appendChild(g);
+  });
+
+  var md=document.getElementById('md'), brief=document.getElementById('brief'),
+      briefText=document.getElementById('briefText'), result=document.getElementById('result'),
+      resultUrl=document.getElementById('resultUrl');
+  function cls(id,c,on){var el=document.getElementById(id); if(el){el.classList[on?'add':'remove'](c);}}
+  function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
+
+  async function cycle(n){
+    var b=BRIEFS[n%BRIEFS.length];
+    // reset
+    result.classList.remove('show'); md.classList.remove('pulse');
+    AGENTS.forEach(function(_,i){cls('agent'+i,'show',false);cls('agent'+i,'active',false);cls('agent'+i,'done',false);
+      cls('edge'+i,'draw',false);cls('edge'+i,'live',false);cls('edge'+i,'done',false);});
+    await sleep(400);
+    // brief drops in
+    briefText.textContent=b[0]; resultUrl.textContent=b[1];
+    brief.classList.add('show'); await sleep(700);
+    // MD staffs
+    md.classList.add('pulse'); await sleep(650);
+    // assign each agent
+    for(var i=0;i<AGENTS.length;i++){
+      cls('edge'+i,'draw',true); cls('edge'+i,'live',true);
+      cls('agent'+i,'show',true); cls('agent'+i,'active',true);
+      await sleep(430);
+    }
+    await sleep(300);
+    // agents complete
+    for(var j=0;j<AGENTS.length;j++){
+      cls('agent'+j,'active',false); cls('agent'+j,'done',true);
+      cls('edge'+j,'live',false); cls('edge'+j,'done',true);
+      await sleep(160);
+    }
+    md.classList.remove('pulse');
+    await sleep(350);
+    result.classList.add('show'); await sleep(2600);
+    brief.classList.remove('show');
+    await sleep(500);
+    cycle(n+1);
+  }
+  cycle(0);
+</script>
+</body>
+</html>
