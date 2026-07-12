@@ -134,6 +134,49 @@ http.route({
   }),
 });
 
+// Dodo Payments webhook (Standard Webhooks / Svix signature). On payment.succeeded, flip the job —
+// identified by the metadata.job_id set at checkout in create_invoice.sh — to PAID (unlocks the
+// deliverable + fires the celebratory beat). The secret lives in the CONVEX env, set with:
+//   npx convex env set DODO_PAYMENTS_WEBHOOK_KEY whsec_...   (NOT ~/.hermes/.env).
+http.route({
+  path: "/dodo-webhook",
+  method: "POST",
+  handler: httpAction(async (ctx, req) => {
+    const raw = await req.text();
+    const ok = await verifyStandardWebhook(raw, req.headers, process.env.DODO_PAYMENTS_WEBHOOK_KEY ?? "");
+    if (!ok) return new Response("bad signature", { status: 401 });
+    let body: any;
+    try { body = JSON.parse(raw); } catch { return new Response("bad json", { status: 400 }); }
+    const type = body?.type ?? body?.event_type;
+    if (type === "payment.succeeded") {
+      // metadata.job_id was set on the payment; Dodo may nest it under data / data.payment.
+      const md = body?.data?.metadata ?? body?.data?.payment?.metadata ?? body?.metadata ?? {};
+      const jobId = md.job_id ?? md.jobId;
+      if (jobId) {
+        try { await ctx.runMutation(api.report.markJobPaid, { jobId }); } catch { /* stale/absent job id — ignore */ }
+      }
+    }
+    return new Response("ok", { status: 200 });
+  }),
+});
+
+// Standard Webhooks (Svix) verify for Dodo. Secret is "whsec_<base64>"; signed content is
+// `${webhook-id}.${webhook-timestamp}.${body}`; the webhook-signature header is a space-separated
+// list of `v1,<base64 HMAC-SHA256>`. Empty secret → skip (local dev only).
+async function verifyStandardWebhook(raw: string, headers: Headers, secret: string): Promise<boolean> {
+  if (!secret) return true;
+  const id = headers.get("webhook-id");
+  const ts = headers.get("webhook-timestamp");
+  const sigHeader = headers.get("webhook-signature");
+  if (!id || !ts || !sigHeader) return false;
+  const b64 = secret.startsWith("whsec_") ? secret.slice(6) : secret;
+  const keyBytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+  const key = await crypto.subtle.importKey("raw", keyBytes, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`${id}.${ts}.${raw}`));
+  const expected = btoa(String.fromCharCode(...new Uint8Array(mac)));
+  return sigHeader.split(" ").some((p) => p.split(",")[1] === expected);
+}
+
 // HMAC-SHA256 verify via Web Crypto (available in Convex's runtime). Empty secret → skip (local dev only).
 async function verifyHmac(raw: string, sig: string, secret: string): Promise<boolean> {
   if (!secret) return true;

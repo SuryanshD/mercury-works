@@ -68,3 +68,13 @@ export const markPaid = mutation({
     if (job && job.status !== "delivered") await ctx.db.patch(pay.jobId, { status: "paid" });
   },
 });
+
+// Dodo webhook path: the Dodo payment carries metadata.job_id (create_invoice.sh sets it) and there
+// is no payments row, so /dodo-webhook flips the job to paid directly by its id.
+export const markJobPaid = mutation({
+  args: { jobId: v.id("jobs") },
+  handler: async (ctx, { jobId }) => {
+    const job = await ctx.db.get(jobId);
+    if (job && job.status !== "delivered") await ctx.db.patch(jobId, { status: "paid" });
+  },
+});
