@@ -4,8 +4,8 @@ import { api } from '../convex/_generated/api'
 const NODES = ['intake','research','naming','review','copy','engineer','publish','voice','invoice','qa','learn']
 const LABEL = { intake:'Intake', research:'Research', naming:'Naming', review:'Review', copy:'Copy', engineer:'Engineer', publish:'Publish', voice:'Voice', invoice:'Invoice', qa:'QA', learn:'Learn' }
 const NODE_MODEL = { research:'Linkup', engineer:'GPT-5.6 Sol', voice:'ElevenLabs', invoice:'Dodo' }
-const COLORS = { done:'#3FB68B', started:'#F5A623', working:'#F5A623', failed:'#E5484D', rejected:'#E5484D', revised:'#8B5CF6' }
-const col = (s) => COLORS[s] || '#3A4356'
+const COLORS = { done:'#7FB069', started:'#F5A623', working:'#F5A623', failed:'#E4572E', rejected:'#E4572E', revised:'#7FB5C9' }
+const col = (s) => COLORS[s] || '#3A322A'
 const money = (n) => (n == null ? '—' : '$' + Number(n).toFixed(2))
 
 export default function MissionControl() {
@@ -73,7 +73,7 @@ export default function MissionControl() {
 
         <aside className="rail">
           <div className="qr-card">
-            <img className="qr" alt="commission QR" src={'https://api.qrserver.com/v1/create-qr-code/?size=190x190&margin=8&bgcolor=12161f&color=e6e9ef&data=' + encodeURIComponent(clientUrl)} />
+            <img className="qr" alt="commission QR" src={'https://api.qrserver.com/v1/create-qr-code/?size=190x190&margin=8&bgcolor=1e1913&color=f2ead9&data=' + encodeURIComponent(clientUrl)} />
             <div className="qr-cap">commission the agency</div>
           </div>
 
@@ -92,7 +92,7 @@ export default function MissionControl() {
             <div className="board-h">JOB BOARD</div>
             {jobs.map((j) => (
               <div key={j._id} className="brow">
-                <span className="bdot" style={{ background: j.status === 'delivered' ? '#3FB68B' : j.status === 'working' ? '#F5A623' : j.status === 'paid' ? '#8B5CF6' : '#3A4356' }} />
+                <span className="bdot" style={{ background: j.status === 'delivered' ? '#7FB069' : j.status === 'working' ? '#F5A623' : j.status === 'paid' ? '#7FB5C9' : '#3A322A' }} />
                 <span className="bbrief">{j.brief}</span>
                 <span className="bstat">{j.status}</span>
               </div>
