@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # voiceover.sh <script-text> <out.mp3> — ElevenLabs TTS for the brand's radio ad.
 # Reads ELEVENLABS_API_KEY + ELEVENLABS_VOICE_ID from env (~/.hermes/.env).
-# Fire-safe: on any error prints "VOICEOVER_UNAVAILABLE" and exits 0 so the pipeline degrades, never fails.
+# Fire-safe: RETRIES transient blips (timeout/000/429/5xx); on total failure prints
+# "VOICEOVER_UNAVAILABLE" and exits 0 so the pipeline degrades, never blocks CORE.
 set -uo pipefail
 
 TEXT="${1:?usage: voiceover.sh <script-text> <out.mp3>}"
@@ -10,16 +11,24 @@ OUT="${2:?usage: voiceover.sh <script-text> <out.mp3>}"
 : "${ELEVENLABS_VOICE_ID:?set ELEVENLABS_VOICE_ID in ~/.hermes/.env}"
 
 BODY=$(python3 -c 'import json,sys; print(json.dumps({"text":sys.argv[1],"model_id":"eleven_flash_v2_5","voice_settings":{"stability":0.5,"similarity_boost":0.75,"style":0.3}}))' "$TEXT")
-CODE=$(curl -s -m 45 -o "$OUT" -w '%{http_code}' \
-  -X POST "https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" -H "Accept: audio/mpeg" \
-  -d "$BODY")
 
-if [ "$CODE" = "200" ] && [ -s "$OUT" ]; then
-  echo "VOICEOVER $OUT ($(wc -c < "$OUT" | tr -d ' ') bytes)"
-else
-  echo "VOICEOVER_UNAVAILABLE (http $CODE)"
-  head -c 200 "$OUT" 2>/dev/null; echo
+# A clean call succeeds reliably, so up to 3 attempts makes the voice stage robust
+# against a single network/API blip on a live demo (the exact failure seen on the floor).
+CODE=000
+for attempt in 1 2 3; do
+  CODE=$(curl -s -m 60 -o "$OUT" -w '%{http_code}' \
+    -X POST "https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}" \
+    -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" -H "Accept: audio/mpeg" \
+    -d "$BODY")
+  if [ "$CODE" = "200" ] && [ -s "$OUT" ]; then
+    echo "VOICEOVER $OUT ($(wc -c < "$OUT" | tr -d ' ') bytes, attempt $attempt)"
+    exit 0
+  fi
+  echo "voiceover attempt $attempt failed (http $CODE); retrying…" >&2
+  head -c 200 "$OUT" 2>/dev/null >&2; echo >&2
   rm -f "$OUT"
-  exit 0
-fi
+  [ "$attempt" != 3 ] && sleep 2
+done
+
+echo "VOICEOVER_UNAVAILABLE (http $CODE after 3 attempts)"
+exit 0

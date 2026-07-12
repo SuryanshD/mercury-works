@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation } from 'convex/react'
+import QRCode from 'qrcode'
 import { api } from '../convex/_generated/api'
 
 const NODES = ['intake','research','naming','review','copy','engineer','publish','voice','invoice','qa','learn']
@@ -49,6 +50,10 @@ export default function MissionControl() {
 
   // Deep-linkable selection: #run=<id> survives refresh + is shareable.
   const [selectedJobId, setSelectedJobId] = useState(readRun)
+
+  // Commission QR — generated LOCALLY in the bundle so the projector's "scan me"
+  // hook never depends on venue wifi reaching an external QR service.
+  const [qrSrc, setQrSrc] = useState(null)
   useEffect(() => {
     const on = () => setSelectedJobId(readRun())
     window.addEventListener('hashchange', on)
@@ -79,6 +84,14 @@ export default function MissionControl() {
   events.forEach((e) => { nodeStatus[e.node] = e.status })
   const feed = [...events].reverse().slice(0, 7)
   const clientUrl = location.origin + '/?client'
+
+  useEffect(() => {
+    let alive = true
+    QRCode.toDataURL(clientUrl, { margin: 2, width: 380, color: { dark: '#f2ead9', light: '#1e1913' } })
+      .then((url) => { if (alive) setQrSrc(url) })
+      .catch(() => {}) // fall back to the external service render below
+    return () => { alive = false }
+  }, [clientUrl])
 
   // queue counts + heartbeat
   const counts = jobs.reduce((a, j) => { a[j.status] = (a[j.status] || 0) + 1; return a }, {})
@@ -199,7 +212,7 @@ export default function MissionControl() {
         {/* ---- right rail: commission QR, learning delta, the live queue ---- */}
         <aside className="rail">
           <div className="qr-card">
-            <img className="qr" alt="commission QR" src={'https://api.qrserver.com/v1/create-qr-code/?size=190x190&margin=8&bgcolor=1e1913&color=f2ead9&data=' + encodeURIComponent(clientUrl)} />
+            <img className="qr" alt="commission QR — scan to file a brief" src={qrSrc || ('https://api.qrserver.com/v1/create-qr-code/?size=380x380&margin=8&bgcolor=1e1913&color=f2ead9&data=' + encodeURIComponent(clientUrl))} />
             <div className="qr-cap">commission the agency</div>
           </div>
 
