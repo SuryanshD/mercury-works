@@ -12,8 +12,10 @@ const NGLYPH = { done:'✓', started:'▲', working:'▲', failed:'✕', rejecte
 const JOB = {
   working:  { c:'var(--accent)', g:'▲', label:'WORKING' },
   queued:   { c:'var(--faint)',  g:'○', label:'QUEUED' },
+  invoiced: { c:'var(--accent)', g:'$', label:'INVOICED' },   // real status: checkout created, awaiting pay
   delivered:{ c:'var(--green)',  g:'✓', label:'DELIVERED' },
   paid:     { c:'var(--violet)', g:'◆', label:'PAID' },
+  stuck:    { c:'var(--red)',    g:'✕', label:'STUCK' },      // real failure state — must read as alarm, not idle
   failed:   { c:'var(--red)',    g:'✕', label:'FAILED' },
 }
 const jobMeta = (s) => JOB[s] || { c:'var(--faint)', g:'·', label:(s || 'unknown').toUpperCase() }
@@ -87,7 +89,10 @@ export default function MissionControl() {
   // The delivered site URL + its brand radio ad — surfaced ON the board so the live
   // link and the ElevenLabs voice ad are one click away, not buried in the feed text.
   const deliverEvent = [...events].reverse().find((e) => (e.node === 'deliver' || e.node === 'publish') && e.status === 'done')
-  const liveUrl = deliverEvent ? ((deliverEvent.note || '').match(/https?:\/\/[^\s"']+/) || [])[0] || null : null
+  const eventUrl = deliverEvent ? ((deliverEvent.note || '').match(/https?:\/\/[^\s"']+/) || [])[0] : null
+  // Prefer the URL persisted on the job (available even before events load); strip any trailing
+  // prose punctuation so the payoff click + the /ad.mp3 audio never 404 on a stray "." or ")".
+  const liveUrl = ((shown && shown.liveUrl) || eventUrl || '').replace(/[).,;:!?\]]+$/, '') || null
   const audioUrl = liveUrl ? liveUrl.replace(/\/+$/, '') + '/ad.mp3' : null
 
   const clientUrl = location.origin + '/?client'
@@ -96,7 +101,9 @@ export default function MissionControl() {
     let alive = true
     QRCode.toDataURL(clientUrl, { margin: 2, width: 380, color: { dark: '#f2ead9', light: '#1e1913' } })
       .then((url) => { if (alive) setQrSrc(url) })
-      .catch(() => {}) // fall back to the external service render below
+      // Only reach for the external QR service if LOCAL generation actually fails — the happy
+      // path never touches the network (that was the whole point of bundling qrcode).
+      .catch(() => { if (alive) setQrSrc('https://api.qrserver.com/v1/create-qr-code/?size=380x380&margin=8&bgcolor=1e1913&color=f2ead9&data=' + encodeURIComponent(clientUrl)) })
     return () => { alive = false }
   }, [clientUrl])
 
@@ -168,7 +175,7 @@ export default function MissionControl() {
                   {audioUrl && (
                     <span className="ad-player">
                       <span className="ad-label">▶ brand radio ad · ElevenLabs</span>
-                      <audio controls preload="none" src={audioUrl} onError={(e) => { const p = e.currentTarget.closest('.ad-player'); if (p) p.style.display = 'none' }} />
+                      <audio controls preload="metadata" src={audioUrl} onError={(e) => { const p = e.currentTarget.closest('.ad-player'); if (p) p.style.display = 'none' }} />
                     </span>
                   )}
                 </div>
@@ -232,7 +239,9 @@ export default function MissionControl() {
         {/* ---- right rail: commission QR, learning delta, the live queue ---- */}
         <aside className="rail">
           <div className="qr-card">
-            <img className="qr" alt="commission QR — scan to file a brief" src={qrSrc || ('https://api.qrserver.com/v1/create-qr-code/?size=380x380&margin=8&bgcolor=1e1913&color=f2ead9&data=' + encodeURIComponent(clientUrl))} />
+            {qrSrc
+              ? <img className="qr" alt="commission QR — scan to file a brief" src={qrSrc} />
+              : <div className="qr qr-ph" aria-hidden="true" />}
             <div className="qr-cap">commission the agency</div>
           </div>
 
@@ -286,6 +295,12 @@ export default function MissionControl() {
                               <span className="qtime">{rel(j.lastEventAt || j._creationTime)}</span>
                             </span>
                           </span>
+                          {j.liveUrl && (
+                            <span className="qopen" role="link" tabIndex={0} title="Open live site"
+                              onClick={(e) => { e.stopPropagation(); window.open(j.liveUrl, '_blank', 'noopener') }}
+                              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); e.preventDefault(); window.open(j.liveUrl, '_blank', 'noopener') } }}
+                            >↗</span>
+                          )}
                         </button>
                       )
                     })}

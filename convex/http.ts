@@ -9,17 +9,22 @@ http.route({
   path: "/report",
   method: "POST",
   handler: httpAction(async (ctx, req) => {
-    const b = await req.json();
-    if (!b.job_id || !b.node || !b.status) return new Response("bad payload", { status: 400 });
-    await ctx.runMutation(api.report.appendEvent, {
-      jobId: b.job_id,
-      node: String(b.node),
-      status: String(b.status),
-      note: b.note ?? undefined,
-      model: b.model ?? undefined,
-      costUsd: typeof b.cost_usd === "number" ? b.cost_usd : undefined,
-      tokens: typeof b.tokens === "number" ? b.tokens : undefined,
-    });
+    const b = await req.json().catch(() => null);
+    if (!b || !b.job_id || !b.node || !b.status) return new Response("bad payload", { status: 400 });
+    try {
+      await ctx.runMutation(api.report.appendEvent, {
+        jobId: b.job_id,
+        node: String(b.node),
+        status: String(b.status),
+        note: b.note ?? undefined,
+        model: b.model ?? undefined,
+        costUsd: typeof b.cost_usd === "number" ? b.cost_usd : undefined,
+        tokens: typeof b.tokens === "number" ? b.tokens : undefined,
+      });
+    } catch {
+      // a bad/stale job_id must NOT 500 — that would freeze the live DAG for every later stage.
+      return new Response("bad job_id", { status: 400 });
+    }
     return new Response("ok", { status: 200 });
   }),
 });
@@ -31,9 +36,9 @@ http.route({
   path: "/set-vertical",
   method: "POST",
   handler: httpAction(async (ctx, req) => {
-    const b = await req.json();
-    const jobId = b.job_id ?? b.jobId;
-    if (!jobId || !b.vertical) return new Response("bad payload", { status: 400 });
+    const b = await req.json().catch(() => null);
+    const jobId = b?.job_id ?? b?.jobId;
+    if (!b || !jobId || !b.vertical) return new Response("bad payload", { status: 400 });
     try {
       await ctx.runMutation(api.jobs.setVertical, { jobId, vertical: String(b.vertical) });
     } catch {
@@ -169,12 +174,17 @@ async function verifyStandardWebhook(raw: string, headers: Headers, secret: stri
   const ts = headers.get("webhook-timestamp");
   const sigHeader = headers.get("webhook-signature");
   if (!id || !ts || !sigHeader) return false;
-  const b64 = secret.startsWith("whsec_") ? secret.slice(6) : secret;
-  const keyBytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
-  const key = await crypto.subtle.importKey("raw", keyBytes, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-  const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`${id}.${ts}.${raw}`));
-  const expected = btoa(String.fromCharCode(...new Uint8Array(mac)));
-  return sigHeader.split(" ").some((p) => p.split(",")[1] === expected);
+  try {
+    const b64 = secret.startsWith("whsec_") ? secret.slice(6) : secret;
+    const keyBytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+    const key = await crypto.subtle.importKey("raw", keyBytes, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`${id}.${ts}.${raw}`));
+    const expected = btoa(String.fromCharCode(...new Uint8Array(mac)));
+    // Standard Webhooks: only accept a v1 signature; a malformed secret can't crash the route.
+    return sigHeader.split(" ").some((p) => { const [ver, s] = p.split(","); return ver === "v1" && s === expected; });
+  } catch {
+    return false;
+  }
 }
 
 // HMAC-SHA256 verify via Web Crypto (available in Convex's runtime). Empty secret → skip (local dev only).

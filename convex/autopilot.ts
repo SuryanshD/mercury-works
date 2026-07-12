@@ -55,8 +55,11 @@ export const clearStuck = mutation({
     let deleted = 0;
     for (const j of all) {
       const isTest = /smoke test|safe to delete/i.test(j.brief);
+      // NB: never auto-delete an `invoiced` job — it's parked waiting for the human to pay the
+      // Dodo link (exactly the live-demo pause); deleting it would orphan the incoming webhook.
       const isStuck =
-        j.status !== "delivered" && j.status !== "paid" && now - (j.lastEventAt ?? 0) > 5 * 60 * 1000;
+        j.status !== "delivered" && j.status !== "paid" && j.status !== "invoiced" &&
+        now - (j.lastEventAt ?? 0) > 5 * 60 * 1000;
       if (isTest || isStuck) {
         await ctx.db.delete(j._id);
         deleted++;

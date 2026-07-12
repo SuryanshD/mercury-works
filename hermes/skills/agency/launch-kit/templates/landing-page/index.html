@@ -103,29 +103,39 @@
 
   <footer class="wrap">© {{NAME}} · shipped live by Mercury Works — an autonomous agency on Hermes</footer>
 
-<!-- animated shader-gradient hero (stripe-gradient, MIT ~12KB, degrade-safe) -->
-<script src="https://cdn.jsdelivr.net/npm/stripe-gradient@1.0.1/dist/main.js"></script>
+<!-- animated shader-gradient hero (stripe-gradient, MIT ~12KB, degrade-safe). async: a stalled
+     CDN on venue wifi must NEVER block the inline reveal script below (that would leave content hidden). -->
+<script async src="https://cdn.jsdelivr.net/npm/stripe-gradient@1.0.1/dist/main.js"></script>
 <!-- GSAP reveals (degrade-safe) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js" defer></script>
 <script>
   var reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
-  // shader hero
-  (function(){ if(reduce)return; try{ var c=document.getElementById('hero-gradient');
-    if((c.getContext('webgl')||c.getContext('experimental-webgl'))&&window.Gradient){ var g=new Gradient(); g.initGradient('#hero-gradient'); } else { c.style.display='none'; }
-  }catch(e){ var el=document.getElementById('hero-gradient'); if(el) el.style.display='none'; } })();
-  // lead capture
-  var LEAD="{{LEAD_ENDPOINT}}";
-  document.getElementById('lead').addEventListener('submit',function(e){e.preventDefault();var m=e.target.email.value;try{if(LEAD&&LEAD.indexOf('http')===0)fetch(LEAD,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:m,sourceUrl:location.href,consent:true})});}catch(_){}document.getElementById('ok').style.display='block';e.target.reset();});
-  if("{{CHECKOUT_URL}}".indexOf('http')!==0){var b=document.getElementById('buyrow');if(b)b.style.display='none';}
-  // GSAP reveals
+
+  // 1) REVEAL FALLBACK FIRST — registered before any code that could throw, so a bespoke page that
+  //    renamed/dropped an element can never leave [data-reveal] content stuck at opacity:0 (blank page).
   window.addEventListener('DOMContentLoaded',function(){
-    if(!window.gsap||reduce){document.querySelectorAll('[data-reveal]').forEach(function(el){el.style.opacity=1});return;}
-    gsap.registerPlugin(ScrollTrigger);
-    gsap.to('.hero [data-reveal]',{y:0,opacity:1,duration:.9,ease:'power3.out',stagger:.12,delay:.15,startAt:{y:28}});
-    gsap.utils.toArray('[data-reveal]').forEach(function(el){ if(el.closest('.hero'))return;
-      gsap.to(el,{y:0,opacity:1,duration:.9,ease:'power2.out',startAt:{y:40},scrollTrigger:{trigger:el,start:'top 85%',once:true}});});
+    try{
+      if(!window.gsap||reduce){document.querySelectorAll('[data-reveal]').forEach(function(el){el.style.opacity=1});return;}
+      gsap.registerPlugin(ScrollTrigger);
+      gsap.to('.hero [data-reveal]',{y:0,opacity:1,duration:.9,ease:'power3.out',stagger:.12,delay:.15,startAt:{y:28}});
+      gsap.utils.toArray('[data-reveal]').forEach(function(el){ if(el.closest('.hero'))return;
+        gsap.to(el,{y:0,opacity:1,duration:.9,ease:'power2.out',startAt:{y:40},scrollTrigger:{trigger:el,start:'top 85%',once:true}});});
+    }catch(e){document.querySelectorAll('[data-reveal]').forEach(function(el){el.style.opacity=1});}
   });
+
+  // 2) shader hero — degrade-safe; on ANY failure LEAVE the canvas showing its CSS fallback gradient
+  //    (never hide it). Re-tries when the async lib arrives.
+  function initShader(){ try{ var c=document.getElementById('hero-gradient');
+    if(c && (c.getContext('webgl')||c.getContext('experimental-webgl')) && window.Gradient){ new Gradient().initGradient('#hero-gradient'); }
+  }catch(e){} }
+  if(!reduce){ if(window.Gradient){ initShader(); } else { var sg=document.querySelector('script[src*="stripe-gradient"]'); if(sg) sg.addEventListener('load', initShader); } }
+
+  // 3) lead capture (guarded — a bespoke page may rename or drop the form)
+  var LEAD="{{LEAD_ENDPOINT}}";
+  var leadForm=document.getElementById('lead');
+  if(leadForm) leadForm.addEventListener('submit',function(e){e.preventDefault();var m=e.target.email.value;try{if(LEAD&&LEAD.indexOf('http')===0)fetch(LEAD,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:m,sourceUrl:location.href,consent:true})});}catch(_){}var ok=document.getElementById('ok');if(ok)ok.style.display='block';e.target.reset();});
+  if("{{CHECKOUT_URL}}".indexOf('http')!==0){var b=document.getElementById('buyrow');if(b)b.style.display='none';}
 </script>
 </body>
 </html>

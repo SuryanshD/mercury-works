@@ -693,3 +693,27 @@ b{font-weight:600}
 .ad-label{ font:600 10px/1 var(--mono); letter-spacing:.14em; text-transform:uppercase; color:var(--accent); white-space:nowrap; }
 .ad-player audio{ height:34px; }
 @media (max-width:900px){ .ad-player{ margin-left:0; } }
+
+/* queue-row quick "open live site" — visible without selecting the run */
+.qopen{
+  flex:0 0 auto; align-self:center; margin-left:6px;
+  width:24px; height:24px; display:grid; place-items:center;
+  color:var(--accent); font-size:13px; line-height:1;
+  border:1px solid var(--line); border-radius:3px; background:transparent;
+  cursor:pointer; transition:background .15s, color .15s;
+}
+.qopen:hover{ background:var(--accent); color:#141210; }
+.qopen:focus-visible{ outline:2px solid var(--accent-hot); outline-offset:2px; }
+/* QR placeholder — shown until the local data-URL resolves (no broken-image, no external hit) */
+.qr-ph{
+  display:block; background:
+    repeating-linear-gradient(45deg, var(--line-soft) 0 6px, transparent 6px 12px), var(--panel2);
+  animation:qrph 1.2s ease-in-out infinite;
+}
+@keyframes qrph{ 50%{ opacity:.55; } }
+
+/* client phone page: error + "hear your radio ad" */
+.cl-err{ margin-top:10px; color:var(--red); font:12px/1.4 var(--mono); }
+.cl-voice{ margin-top:18px; padding-top:16px; border-top:1px solid var(--line); }
+.cl-voice-h{ font:600 11px/1 var(--mono); letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin-bottom:10px; }
+.cl-voice audio{ width:100%; max-width:420px; }

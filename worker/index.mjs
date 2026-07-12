@@ -44,10 +44,16 @@ function runJob(job) {
   // execFile with an args array → the brief is passed as one argv element (no shell, no injection).
   const args = ["exec", CONTAINER, "hermes", "-z", prompt, "--provider", PROVIDER, "-m", MODEL, "--yolo"];
   return new Promise((resolve) => {
-    execFile(DOCKER, args, { maxBuffer: 64 * 1024 * 1024 }, (err, stdout, stderr) => {
+    // timeout is the demo lifesaver: a hung agent (model wait, docker wedge, network stall) would
+    // otherwise never resolve, pinning `active` at MAX and freezing the whole queue for the session.
+    execFile(DOCKER, args, { maxBuffer: 64 * 1024 * 1024, timeout: 12 * 60 * 1000, killSignal: "SIGKILL" }, async (err, stdout, stderr) => {
       if (err) {
         console.error(`job ${job.jobId} failed: ${err.message}`);
         if (stderr) console.error(stderr.slice(0, 500));
+        // Never leave the job "working" forever — mark it stuck so Mission Control shows the failure
+        // (red ✕) instead of a frozen DAG, and the operator can re-queue.
+        try { await convex.mutation(anyApi.jobs.markStuck, { jobId: job.jobId, note: `worker: ${String(err.message).slice(0, 80)}` }); }
+        catch (e) { console.error("markStuck failed:", e.message); }
       } else {
         console.log(`job ${job.jobId} done`);
       }
@@ -57,23 +63,30 @@ function runJob(job) {
 }
 
 let active = 0;
+let ticking = false; // guard: a slow claim must not let two overlapping ticks exceed MAX_CONCURRENT
 console.log(`worker: polling ${CONVEX_URL} for queued jobs (max ${MAX} concurrent) → docker exec ${CONTAINER} hermes -z (${PROVIDER}/${MODEL})`);
 setInterval(async () => {
-  while (active < MAX) {
-    let job;
-    try {
-      job = await convex.mutation(anyApi.jobs.claimNextJob, {});
-    } catch (e) {
-      console.error("claim error:", e.message);
-      break;
+  if (ticking) return;
+  ticking = true;
+  try {
+    while (active < MAX) {
+      let job;
+      try {
+        job = await convex.mutation(anyApi.jobs.claimNextJob, {});
+      } catch (e) {
+        console.error("claim error:", e.message);
+        break;
+      }
+      if (!job) break;
+      active++;
+      console.log(`claimed ${job.jobId} (active ${active})`);
+      runJob(job)
+        .catch((e) => console.error("run error:", e.message))
+        .finally(() => {
+          active--;
+        });
     }
-    if (!job) break;
-    active++;
-    console.log(`claimed ${job.jobId} (active ${active})`);
-    runJob(job)
-      .catch((e) => console.error("run error:", e.message))
-      .finally(() => {
-        active--;
-      });
+  } finally {
+    ticking = false;
   }
 }, 1000);

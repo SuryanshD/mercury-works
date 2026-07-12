@@ -27,15 +27,20 @@ export default function Roster() {
     e.preventDefault()
     if (!roleName.trim() || !mission.trim()) return
     setBusy(true)
-    await addRole({
-      roleName: roleName.trim(),
-      mission: mission.trim(),
-      allowedTools: tools,
-      guardrails: toList(guardrails),
-      maxRetriesBeforeEscalate: Number(maxRetries) || 0,
-    })
-    setRoleName(''); setMission(''); setTools([]); setGuardrails(''); setMaxRetries(2)
-    setBusy(false)
+    try {
+      await addRole({
+        roleName: roleName.trim(),
+        mission: mission.trim(),
+        allowedTools: tools,
+        guardrails: toList(guardrails),
+        maxRetriesBeforeEscalate: Number(maxRetries) || 0,
+      })
+      setRoleName(''); setMission(''); setTools([]); setGuardrails(''); setMaxRetries(2)
+    } catch {
+      // a wifi blip shouldn't wipe the form or leave the button stuck on "Saving…"
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -65,7 +70,7 @@ export default function Roster() {
             <div className="role-top"><b>{r.roleName}</b><span className="role-retry">↻{r.maxRetriesBeforeEscalate}</span></div>
             <div className="role-mission">{r.mission}</div>
             <div className="role-tags">
-              {r.allowedTools.map((t) => <span key={t} className="role-tag">{t}</span>)}
+              {(r.allowedTools || []).map((t) => <span key={t} className="role-tag">{t}</span>)}
             </div>
           </div>
         ))}

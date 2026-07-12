@@ -51,6 +51,20 @@ export const listJobs = query({
   handler: async (ctx) => await ctx.db.query("jobs").order("desc").take(20),
 });
 
+// The worker calls this when a run ends without delivering (docker error / timeout / crash),
+// so the DAG shows a failure (STUCK ✕) instead of freezing on a job that stays "working" forever.
+export const markStuck = mutation({
+  args: { jobId: v.id("jobs"), note: v.optional(v.string()) },
+  handler: async (ctx, { jobId, note }) => {
+    const job = await ctx.db.get(jobId);
+    if (!job) return;
+    if (job.status !== "delivered" && job.status !== "paid") {
+      await ctx.db.patch(jobId, { status: "stuck", lastEventAt: Date.now() });
+      await ctx.db.insert("events", { jobId, node: "deliver", status: "failed", note: note ?? "run ended without delivery", ts: Date.now() });
+    }
+  },
+});
+
 export const getJob = query({
   args: { jobId: v.id("jobs") },
   handler: async (ctx, { jobId }) => await ctx.db.get(jobId),

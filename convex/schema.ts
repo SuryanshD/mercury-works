@@ -23,6 +23,7 @@ export default defineSchema({
     costUsd: v.optional(v.number()),
     skillLoaded: v.optional(v.boolean()), // false = job ran cold (no playbook); true = playbook loaded
     lastEventAt: v.optional(v.number()),
+    liveUrl: v.optional(v.string()), // the deployed *.pages.dev site — surfaced on the board (queue + stage) so it's one click away
   }).index("by_status", ["status"]),
 
   events: defineTable({

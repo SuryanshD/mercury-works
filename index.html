@@ -10,22 +10,23 @@
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     <!-- Reactor Core: molten shader glow behind the DAG (stripe-gradient, MIT, ~12KB, degrade-safe) -->
-    <script src="https://cdn.jsdelivr.net/npm/stripe-gradient@1.0.1/dist/main.js"></script>
+    <!-- async: a stalled CDN on venue wifi must NEVER block the React entry (white screen). -->
+    <script async src="https://cdn.jsdelivr.net/npm/stripe-gradient@1.0.1/dist/main.js"></script>
     <script>
     (function () {
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       var canvas = null, gradient = null, dead = false;
       function ensure(stage) {
-        if (dead) return;
+        if (dead || gradient) return;
         if (!canvas) {
           canvas = document.createElement('canvas');
           canvas.id = 'reactor-canvas';
           canvas.setAttribute('data-transition-in', '');
         }
         if (canvas.parentNode !== stage) stage.insertBefore(canvas, stage.firstChild);
-        if (gradient) return;
         var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-        if (!gl || !window.Gradient) { canvas.style.display = 'none'; dead = true; return; }
+        if (!gl) { canvas.style.display = 'none'; dead = true; return; } // no WebGL — real failure
+        if (!window.Gradient) return; // async CDN still loading — retry on the next poll
         try {
           gradient = new Gradient();
           gradient.initGradient('#reactor-canvas');
@@ -35,14 +36,16 @@
           });
         } catch (e) { canvas.style.display = 'none'; dead = true; }
       }
+      var tries = 0;
       var iv = setInterval(function () {
         var stage = document.querySelector('.stage');
-        if (!stage) return;
-        clearInterval(iv);
-        ensure(stage);
-        new MutationObserver(function () {
-          if (!stage.querySelector('#reactor-canvas')) ensure(stage);
-        }).observe(stage, { childList: true });
+        if (stage) ensure(stage);
+        if (gradient || dead || ++tries > 80) { // stop after init, real failure, or ~10s of dead wifi
+          clearInterval(iv);
+          if (stage) new MutationObserver(function () {
+            if (!dead && !stage.querySelector('#reactor-canvas')) ensure(stage);
+          }).observe(stage, { childList: true });
+        }
       }, 120);
     })();
     </script>

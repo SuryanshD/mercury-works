@@ -14,8 +14,11 @@ SRC="${2:?usage: deploy_page.sh <brand-name-or-slug> <src_dir>}"
 # slug: lowercase, alnum+hyphen, trimmed, <=40 chars (CF Pages project-name rules)
 SLUG=$(printf '%s' "$NAME_RAW" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//' | cut -c1-40)
 [ -z "$SLUG" ] && SLUG="launch"
-# short random suffix so re-runs never collide on the CF project
-SUF=$(head -c8 /dev/urandom 2>/dev/null | od -An -tx1 | tr -d ' \n' | cut -c1-6)
+# DETERMINISTIC suffix so every deploy for the SAME job hits the SAME project/URL — the motion
+# re-deploy (step 8) and the QA retry (step 9) must NOT mint a new URL, or the audience keeps the
+# static version while a different link is reported. Key: explicit 3rd arg > $JOB_ID env > brand.
+KEY="${3:-${JOB_ID:-$NAME_RAW}}"
+SUF=$(printf '%s' "$KEY" | shasum 2>/dev/null | tr -cd '0-9a-f' | cut -c1-6)
 [ -z "$SUF" ] && SUF="$$"
 PROJECT="mw-${SLUG}-${SUF}"
 
@@ -34,7 +37,9 @@ URL="https://${PROJECT}.pages.dev"
 DEPLOY_URL=$(printf '%s' "$OUT" | grep -oE 'https://[a-z0-9-]+\.'"${PROJECT}"'\.pages\.dev' | tail -1)
 [ -n "$DEPLOY_URL" ] || DEPLOY_URL=$(printf '%s' "$OUT" | grep -oE 'https://[a-z0-9.-]+\.pages\.dev' | tail -1)
 
-if printf '%s' "$OUT" | grep -qiE 'success|uploaded|deployment complete|Deploying'; then
+# match only terminal success markers — "Deploying…" prints BEFORE finalization, so a post-upload
+# failure must not be mis-read as DEPLOYED (a URL that then 404s on the projector).
+if printf '%s' "$OUT" | grep -qiE 'deployment complete|success! uploaded'; then
   echo "DEPLOYED $URL"
   [ -n "$DEPLOY_URL" ] && echo "PREVIEW $DEPLOY_URL"
   exit 0
