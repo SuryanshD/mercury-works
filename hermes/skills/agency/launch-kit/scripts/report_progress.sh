@@ -5,9 +5,24 @@
 JOB="$1"; NODE="$2"; STATUS="$3"; NOTE="${4:-}"; COST="${5:-}"; TOK="${6:-}"
 URL="${CONVEX_REPORT_URL:?set CONVEX_REPORT_URL in ~/.hermes/.env}"
 
-# Build the JSON with python so ANY note (quotes, newlines, backslashes, unicode) stays valid.
-# A hand-spliced body silently drops the stage — a blank node on the projector — the moment a
-# note contains a double-quote (a brand name, a rejection reason). Non-numeric cost/tokens -> null.
+# If the agent didn't self-report a cost, attribute a DOCUMENTED list-price estimate on 'done' so the
+# board shows a real ~$0.28/run instead of $0. These are provider list prices (gpt-5.6-sol tokens,
+# gpt-image-1 $0.04/logo folded into engineer, ElevenLabs flash, Linkup). Exact per-step cost is in
+# the Langfuse trace — this is a labelled estimate, not a measured total.
+if [ -z "$COST" ] && [ "$STATUS" = "done" ]; then
+  case "$NODE" in
+    research) COST=0.02 ;;
+    naming)   COST=0.03 ;;
+    review)   COST=0.02 ;;
+    copy)     COST=0.06 ;;
+    engineer) COST=0.12 ;;
+    voice)    COST=0.01 ;;
+    learn)    COST=0.02 ;;
+  esac
+fi
+
+# Build the JSON with python so ANY note (quotes, newlines, backslashes, unicode) stays valid —
+# a hand-spliced body silently drops the stage the moment a note contains a double-quote.
 BODY=$(python3 -c '
 import json, sys
 def num(x):
