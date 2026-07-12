@@ -83,6 +83,13 @@ export default function MissionControl() {
   const nodeStatus = {}
   events.forEach((e) => { nodeStatus[e.node] = e.status })
   const feed = [...events].reverse().slice(0, 7)
+
+  // The delivered site URL + its brand radio ad — surfaced ON the board so the live
+  // link and the ElevenLabs voice ad are one click away, not buried in the feed text.
+  const deliverEvent = [...events].reverse().find((e) => (e.node === 'deliver' || e.node === 'publish') && e.status === 'done')
+  const liveUrl = deliverEvent ? ((deliverEvent.note || '').match(/https?:\/\/[^\s"']+/) || [])[0] || null : null
+  const audioUrl = liveUrl ? liveUrl.replace(/\/+$/, '') + '/ad.mp3' : null
+
   const clientUrl = location.origin + '/?client'
 
   useEffect(() => {
@@ -153,6 +160,19 @@ export default function MissionControl() {
                   )}
                 </div>
               </div>
+
+              {liveUrl && (
+                <div className="delivery">
+                  <a className="open-site" href={liveUrl} target="_blank" rel="noreferrer">Open live site ↗</a>
+                  <span className="dlv-url">{liveUrl.replace(/^https?:\/\//, '')}</span>
+                  {audioUrl && (
+                    <span className="ad-player">
+                      <span className="ad-label">▶ brand radio ad · ElevenLabs</span>
+                      <audio controls preload="none" src={audioUrl} onError={(e) => { const p = e.currentTarget.closest('.ad-player'); if (p) p.style.display = 'none' }} />
+                    </span>
+                  )}
+                </div>
+              )}
 
               {dagLoading ? (
                 <div className="dag" data-dag-pane>
